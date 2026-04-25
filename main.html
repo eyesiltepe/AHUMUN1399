@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kim Milyoner Olmak İster?</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep: #050a30;
+  --bg-mid: #0f1758;
+  --bg-light: #1a2580;
+  --bg-glow: #2a3aa0;
+  --gold: #ffd700;
+  --gold-dark: #b8860b;
+  --gold-light: #fff4a3;
+  --orange: #ff8c00;
+  --orange-deep: #cc6a00;
+  --green: #00c851;
+  --green-bright: #00ff66;
+  --red: #ff1744;
+  --red-deep: #b71c1c;
+  --text: #ffffff;
+  --safe: #ffeb3b;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 50% 30%, var(--bg-glow) 0%, var(--bg-mid) 35%, var(--bg-deep) 70%, #000 100%);
+  background-attachment: fixed;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,215,0,0.02) 0px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(255,215,0,0.02) 0px, transparent 1px, transparent 3px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.screen {
+  display: none;
+  position: relative;
+  z-index: 2;
+}
+.screen.active { display: flex; }
+
+/* === HOŞGELDİN EKRANI === */
+.welcome {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  padding: 20px;
+}
+.welcome-logo {
+  font-size: clamp(2rem, 7vw, 5rem);
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 0 25px var(--gold), 0 0 50px var(--gold-dark), 0 4px 8px rgba(0,0,0,0.5);
+  margin-bottom: 15px;
+  letter-spacing: 3px;
+  animation: pulse-glow 2.5s ease-in-out infinite;
+  line-height: 1.1;
+}
+.welcome-subtitle {
+  color: var(--gold-light);
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  margin-bottom: 50px;
+  opacity: 0.95;
+  letter-spacing: 1px;
+}
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 25px var(--gold), 0 0 50px var(--gold-dark); transform: scale(1); }
+  50% { text-shadow: 0 0 40px var(--gold), 0 0 80px var(--gold-dark), 0 0 120px var(--gold-dark); transform: scale(1.02); }
+}
+
+.btn {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+  color: var(--bg-deep);
+  border: 3px solid var(--gold);
+  padding: 16px 50px;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 900;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 2px;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.5), 0 4px 15px rgba(0,0,0,0.3);
+  font-family: inherit;
+  text-transform: uppercase;
+}
+.btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.9), 0 6px 20px rgba(0,0,0,0.4);
+}
+.btn:active { transform: scale(0.98); }
+
+/* === OYUN EKRANI === */
+.game {
+  flex-direction: column;
+  height: 100vh;
+  padding: 15px;
+  gap: 15px;
+}
+.game-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+}
+.play-area {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.counter {
+  background: rgba(0,0,0,0.4);
+  border: 2px solid var(--gold);
+  padding: 6px 18px;
+  border-radius: 30px;
+  color: var(--gold);
+  font-weight: bold;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+.lifelines {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  justify-content: center;
+}
+.lifeline {
+  width: 70px;
+  height: 70px;
+  border: 3px solid var(--gold);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--bg-light), var(--bg-deep));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--gold);
+  transition: all 0.25s;
+  position: relative;
+  flex-shrink: 0;
+}
+.lifeline:hover:not(.used):not(.locked) {
+  transform: scale(1.12) translateY(-3px);
+  box-shadow: 0 0 25px var(--gold), 0 5px 15px rgba(0,0,0,0.4);
+  background: radial-gradient(circle at 30% 30%, var(--bg-glow), var(--bg-light));
+}
+.lifeline.used, .lifeline.locked {
+  cursor: not-allowed;
+  opacity: 0.35;
+  filter: grayscale(80%);
+}
+.lifeline.used::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, transparent 45%, var(--red) 47%, var(--red) 53%, transparent 55%);
+  pointer-events: none;
+}
+.sound-toggle {
+  background: rgba(0,0,0,0.4);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.sound-toggle:hover { transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
+
+.question-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+.question-box {
+  background:
+    linear-gradient(135deg, var(--bg-light) 0%, var(--bg-mid) 50%, var(--bg-light) 100%);
+  border: 3px solid var(--gold);
+  border-radius: 18px;
+  padding: 25px 30px;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: clamp(0.95rem, 2vw, 1.4rem);
+  font-weight: 600;
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.25),
+    inset 0 0 25px rgba(255, 215, 0, 0.08),
+    0 8px 25px rgba(0,0,0,0.4);
+  margin-bottom: 25px;
+  line-height: 1.5;
+  position: relative;
+  animation: slide-in 0.5s ease-out;
+}
+.question-box::before, .question-box::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--gold);
+  top: -3px;
+}
+.question-box::before { left: -3px; border-right: none; border-bottom: none; border-radius: 18px 0 0 0; }
+.question-box::after { right: -3px; border-left: none; border-bottom: none; border-radius: 0 18px 0 0; }
+@keyframes slide-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.answer {
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-mid) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 50px;
+  padding: 15px 22px;
+  font-size: clamp(0.85rem, 1.4vw, 1.15rem);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  font-family: inherit;
+  color: white;
+  font-weight: 600;
+  min-height: 60px;
+  animation: answer-in 0.4s ease-out backwards;
+}
+.answer:nth-child(1) { animation-delay: 0.1s; }
+.answer:nth-child(2) { animation-delay: 0.2s; }
+.answer:nth-child(3) { animation-delay: 0.3s; }
+.answer:nth-child(4) { animation-delay: 0.4s; }
+@keyframes answer-in {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.answer .letter {
+  color: var(--gold);
+  font-weight: 900;
+  font-size: 1.15em;
+  min-width: 28px;
+  flex-shrink: 0;
+}
+.answer:hover:not(.disabled):not(.locked) {
+  background: linear-gradient(135deg, var(--bg-glow) 0%, var(--bg-light) 100%);
+  box-shadow: 0 0 22px var(--gold);
+  transform: scale(1.02);
+}
+.answer.selected {
+  background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+  border-color: var(--orange);
+  box-shadow: 0 0 35px var(--orange);
+  animation: pulse-orange 0.9s ease-in-out infinite;
+}
+.answer.selected .letter { color: white; }
+@keyframes pulse-orange {
+  0%, 100% { box-shadow: 0 0 30px var(--orange); }
+  50% { box-shadow: 0 0 55px var(--orange), 0 0 80px var(--orange); }
+}
+.answer.correct {
+  background: linear-gradient(135deg, var(--green), #008040) !important;
+  border-color: var(--green) !important;
+  box-shadow: 0 0 50px var(--green) !important;
+  animation: flash-green 0.5s ease 4 !important;
+}
+.answer.correct .letter { color: white !important; }
+@keyframes flash-green {
+  0%, 100% { background: linear-gradient(135deg, var(--green), #008040); }
+  50% { background: linear-gradient(135deg, var(--green-bright), var(--green)); box-shadow: 0 0 80px var(--green-bright); }
+}
+.answer.wrong {
+  background: linear-gradient(135deg, var(--red), var(--red-deep)) !important;
+  border-color: var(--red) !important;
+  box-shadow: 0 0 35px var(--red) !important;
+  animation: shake 0.4s ease 2 !important;
+}
+.answer.wrong .letter { color: white !important; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.answer.disabled, .answer.locked { cursor: not-allowed; }
+.answer.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+/* === PARA MERDIVENI === */
+.ladder-area {
+  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 15px;
+  padding: 12px 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 3px;
+  box-shadow: inset 0 0 20px rgba(255,215,0,0.1);
+}
+.ladder-area::-webkit-scrollbar { width: 6px; }
+.ladder-area::-webkit-scrollbar-track { background: transparent; }
+.ladder-area::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+.rung {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 16px;
+  border-radius: 25px;
+  font-weight: bold;
+  transition: all 0.3s;
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.6);
+}
+.rung.safe { color: var(--safe); }
+.rung.current {
+  background: linear-gradient(90deg, var(--orange-deep), var(--orange), var(--orange-deep));
+  color: white !important;
+  box-shadow: 0 0 18px var(--orange), inset 0 0 10px rgba(255,255,255,0.2);
+  transform: scale(1.06);
+}
+.rung.passed {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(255,215,0,0.5);
+}
+.rung-num {
+  opacity: 0.7;
+  margin-right: 10px;
+  display: inline-block;
+  min-width: 20px;
+  text-align: right;
+}
+.rung-amount {
+  font-weight: 900;
+  font-size: 1.05em;
+}
+
+/* === ALT KISIM === */
+.footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.walk-away {
+  background: linear-gradient(135deg, var(--red-deep), #5e0000);
+  color: white;
+  border: 2px solid #ff6666;
+  padding: 11px 32px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: inherit;
+  letter-spacing: 1px;
+}
+.walk-away:hover:not(:disabled) {
+  box-shadow: 0 0 25px var(--red);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+}
+.walk-away:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* === BİTİŞ EKRANI === */
+.end {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  padding: 20px;
+}
+.end-icon {
+  font-size: clamp(3rem, 10vw, 6rem);
+  margin-bottom: 10px;
+  animation: bounce 1.5s ease-in-out infinite;
+}
+.end h2 {
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  margin-bottom: 15px;
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold-dark);
+}
+.prize-display {
+  font-size: clamp(2rem, 7vw, 5rem);
+  color: var(--gold);
+  text-shadow: 0 0 30px var(--gold), 0 0 60px var(--gold-dark);
+  margin: 20px 0 30px 0;
+  font-weight: 900;
+  letter-spacing: 2px;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.end p {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  margin-bottom: 30px;
+  color: var(--gold-light);
+  max-width: 600px;
+  line-height: 1.6;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* === MODAL === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal-overlay.active {
+  display: flex;
+  animation: fade-in 0.3s ease;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.modal {
+  background: linear-gradient(135deg, var(--bg-mid), var(--bg-deep));
+  border: 3px solid var(--gold);
+  border-radius: 20px;
+  padding: 35px 30px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 60px var(--gold), 0 10px 40px rgba(0,0,0,0.5);
+  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pop-in {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal h3 {
+  color: var(--gold);
+  margin-bottom: 18px;
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+  text-shadow: 0 0 15px var(--gold-dark);
+}
+.modal p {
+  margin: 12px 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.confirm-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 25px;
+  flex-wrap: wrap;
+}
+.btn-yes {
+  background: linear-gradient(135deg, var(--green-bright), var(--green));
+  color: white;
+  border-color: var(--green);
+  box-shadow: 0 0 20px rgba(0,200,80,0.4);
+  padding: 12px 28px;
+  font-size: 1rem;
+}
+.btn-no {
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+  color: white;
+  border-color: var(--red);
+  box-shadow: 0 0 20px rgba(255,23,68,0.4);
+  padding: 12px 28px;
+  font-size: 1rem;
+}
+
+/* === SEYIRCI GRAFIK === */
+.audience-bars {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 220px;
+  gap: 15px;
+  margin: 30px 10px 35px 10px;
+  padding: 0 5px;
+}
+.audience-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+}
+.audience-percent {
+  font-weight: bold;
+  font-size: 1.05rem;
+  color: var(--gold);
+  text-shadow: 0 0 8px var(--gold-dark);
+}
+.audience-bar {
+  width: 100%;
+  background: linear-gradient(0deg, var(--gold-dark), var(--gold), var(--gold-light));
+  border-radius: 5px 5px 0 0;
+  transition: height 1.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+  height: 0;
+  box-shadow: 0 0 12px rgba(255,215,0,0.4), inset 0 0 8px rgba(255,255,255,0.2);
+  border: 1px solid var(--gold);
+  border-bottom: none;
+}
+.audience-letter {
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: var(--gold);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .game-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .ladder-area {
+    max-height: 110px;
+    flex-direction: row-reverse;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px;
+  }
+  .rung {
+    flex-shrink: 0;
+    min-width: 130px;
+    font-size: 0.85rem;
+    padding: 7px 12px;
+  }
+  .answers {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .answer {
+    min-height: 52px;
+    padding: 12px 18px;
+  }
+  .lifeline {
+    width: 58px;
+    height: 58px;
+    font-size: 1.05rem;
+  }
+  .top-bar {
+    gap: 10px;
+  }
+  .counter {
+    font-size: 0.85rem;
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game { padding: 10px; gap: 10px; }
+  .question-box { padding: 18px 16px; min-height: 90px; margin-bottom: 18px; }
+  .top-bar { margin-bottom: 12px; }
+  .lifeline { width: 50px; height: 50px; font-size: 0.9rem; }
+  .lifelines { gap: 8px; }
+  .modal { padding: 25px 18px; }
+  .audience-bars { height: 180px; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HOŞGELDİN EKRANI ============ -->
+<div id="welcome" class="screen welcome active">
+  <div class="welcome-logo">KİM MİLYONER<br>OLMAK İSTER?</div>
+  <div class="welcome-subtitle">15 soru, 1.000.000 ödül, 3 joker hakkı</div>
+  <button class="btn" onclick="game.start()">OYUNA BAŞLA</button>
+</div>
+
+<!-- ============ OYUN EKRANI ============ -->
+<div id="game" class="screen game">
+  <div class="game-grid">
+    <div class="play-area">
+      <div class="top-bar">
+        <span class="counter" id="counter">Soru 1 / 15</span>
+        <div class="lifelines">
+          <div class="lifeline" id="ll-fifty" onclick="game.useFiftyFifty()" title="50:50 - İki yanlış şıkkı eler">50:50</div>
+          <div class="lifeline" id="ll-audience" onclick="game.useAudience()" title="Seyirciye sor">👥</div>
+          <div class="lifeline" id="ll-phone" onclick="game.usePhone()" title="Telefon jokeri">📞</div>
+        </div>
+        <button class="sound-toggle" id="sound-toggle" onclick="game.toggleSound()" title="Ses">🔊</button>
+      </div>
+      <div class="question-area">
+        <div class="question-box" id="question-box"></div>
+        <div class="answers" id="answers"></div>
+      </div>
+      <div class="footer">
+        <button class="walk-away" id="walk-away-btn" onclick="game.askWalkAway()">PARAYI AL VE AYRIL</button>
+      </div>
+    </div>
+    <div class="ladder-area" id="ladder"></div>
+  </div>
+</div>
+
+<!-- ============ BİTİŞ EKRANI ============ -->
+<div id="end" class="screen end">
+  <div class="end-icon" id="end-icon">🏆</div>
+  <h2 id="end-title"></h2>
+  <div class="prize-display" id="end-prize"></div>
+  <p id="end-message"></p>
+  <button class="btn" onclick="location.reload()">YENİDEN OYNA</button>
+</div>
+
+<!-- ============ MODALLAR ============ -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <h3>Son cevabın bu mu?</h3>
+    <p id="confirm-text" style="color: var(--orange); font-weight: bold; font-size: 1.2rem;"></p>
+    <p style="font-size: 0.95rem; opacity: 0.85;">Evet dersen cevabın kilitlenecek.</p>
+    <div class="confirm-buttons">
+      <button class="btn btn-yes" onclick="game.confirmAnswer()">EVET, SON CEVAP</button>
+      <button class="btn btn-no" onclick="game.cancelAnswer()">HAYIR, DÜŞÜNEYİM</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-walkaway">
+  <div class="modal">
+    <h3>Oyunu bırakmak istediğine emin misin?</h3>
+    <p style="font-size: 1.1rem;">Şu an <strong style="color: var(--gold); font-size: 1.3em;" id="walkaway-amount"></strong> ile ayrılacaksın.</p>
+    <div class="confirm-buttons">
+      <button class="btn btn-yes" onclick="game.confirmWalkAway()">EVET, AYRIL</button>
+      <button class="btn btn-no" onclick="game.closeModal('modal-walkaway')">HAYIR, DEVAM</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-audience">
+  <div class="modal">
+    <h3>👥 Seyirciye Soruldu</h3>
+    <div class="audience-bars" id="audience-bars"></div>
+    <button class="btn" onclick="game.closeModal('modal-audience')">DEVAM ET</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-phone">
+  <div class="modal">
+    <h3>📞 Telefondaki Arkadaşın</h3>
+    <p id="phone-text" style="font-style: italic; font-size: 1.1rem; line-height: 1.6; color: var(--gold-light); margin: 22px 0;"></p>
+    <button class="btn" onclick="game.closeModal('modal-phone')">DEVAM ET</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   KİM MİLYONER OLMAK İSTER - YAPILANDIRMA
+   =====================================================================
+
+   1) SORULARI DEĞİŞTİRMEK İÇİN: Aşağıdaki QUESTIONS dizisini düzenle.
+      Her soru şu yapıda olmalıdır:
+
+      {
+        question: "Soru metni buraya gelir",
+        answers: ["A şıkkı", "B şıkkı", "C şıkkı", "D şıkkı"],
+        correct: 0          // 0=A, 1=B, 2=C, 3=D (DOĞRU CEVABIN İNDEKSİ)
+      }
+
+      Toplam 15 soru olmalıdır. Sıra: kolaydan zora.
+
+   2) PARA MIKTARLARINI DEĞİŞTİRMEK İÇİN: PRIZES dizisini düzenle.
+      15 sayı olmalıdır.
+
+   3) GARANTİ SEVİYELERİNİ DEĞİŞTİRMEK İÇİN: SAFE_LEVELS düzenle.
+      İndeks 4 = 5. soru, indeks 9 = 10. sorunun garanti olduğu anlamına gelir.
+
+   ===================================================================== */
+
+const QUESTIONS = [
+  {
+    question: "Türkiye Cumhuriyeti'nin başkenti aşağıdakilerden hangisidir?",
+    answers: ["İstanbul", "İzmir", "Ankara", "Bursa"],
+    correct: 2
+  },
+  {
+    question: "Bir yılda kaç ay vardır?",
+    answers: ["10", "11", "12", "13"],
+    correct: 2
+  },
+  {
+    question: "Aşağıdakilerden hangisi bir gezegen değildir?",
+    answers: ["Mars", "Venüs", "Ay", "Satürn"],
+    correct: 2
+  },
+  {
+    question: "Mona Lisa tablosunu kim çizmiştir?",
+    answers: ["Pablo Picasso", "Leonardo da Vinci", "Vincent van Gogh", "Michelangelo"],
+    correct: 1
+  },
+  {
+    question: "İstiklal Marşı'nın söz yazarı kimdir?",
+    answers: ["Yahya Kemal Beyatlı", "Mehmet Akif Ersoy", "Necip Fazıl Kısakürek", "Nazım Hikmet"],
+    correct: 1
+  },
+  {
+    question: "Pi sayısının yaklaşık değeri aşağıdakilerden hangisidir?",
+    answers: ["2.71", "3.14", "1.41", "1.61"],
+    correct: 1
+  },
+  {
+    question: "\"Suç ve Ceza\" romanının yazarı kimdir?",
+    answers: ["Lev Tolstoy", "Anton Çehov", "Fyodor Dostoyevski", "Aleksandr Puşkin"],
+    correct: 2
+  },
+  {
+    question: "Periyodik tabloda \"Au\" sembolü hangi elementi temsil eder?",
+    answers: ["Gümüş", "Altın", "Bakır", "Alüminyum"],
+    correct: 1
+  },
+  {
+    question: "Türkiye Cumhuriyeti hangi yıl ilan edilmiştir?",
+    answers: ["1920", "1921", "1922", "1923"],
+    correct: 3
+  },
+  {
+    question: "DNA'nın çift sarmal yapısını kim/kimler keşfetmiştir?",
+    answers: ["Einstein ve Bohr", "Watson ve Crick", "Mendel ve Darwin", "Pasteur ve Curie"],
+    correct: 1
+  },
+  {
+    question: "İnsan vücudundaki en uzun kemik hangisidir?",
+    answers: ["Tibia (Kaval kemiği)", "Femur (Uyluk kemiği)", "Humerus (Pazu kemiği)", "Radius (Ön kol kemiği)"],
+    correct: 1
+  },
+  {
+    question: "\"Yüzüklerin Efendisi\" üçlemesinin yazarı kimdir?",
+    answers: ["C.S. Lewis", "George R. R. Martin", "J.R.R. Tolkien", "J.K. Rowling"],
+    correct: 2
+  },
+  {
+    question: "Periyodik tablodaki en hafif element hangisidir?",
+    answers: ["Helyum", "Oksijen", "Hidrojen", "Karbon"],
+    correct: 2
+  },
+  {
+    question: "İstanbul (Konstantinopolis) hangi yılda fethedilmiştir?",
+    answers: ["1450", "1451", "1453", "1455"],
+    correct: 2
+  },
+  {
+    question: "\"Cogito, ergo sum\" (Düşünüyorum, öyleyse varım) sözü hangi filozofa aittir?",
+    answers: ["Sokrates", "Platon", "Aristoteles", "René Descartes"],
+    correct: 3
+  }
+];
+
+const PRIZES = [
+  100, 200, 500, 1000, 2000,
+  3000, 5000, 7500, 15000, 30000,
+  60000, 125000, 250000, 500000, 1000000
+];
+
+const SAFE_LEVELS = [4, 9]; // 5. ve 10. sorular garanti
+
+const PARA_BIRIMI = '₺';
+
+/* =====================================================================
+   OYUN MANTIĞI - Aşağısını değiştirmen gerekmez
+   ===================================================================== */
+
+const STATE = {
+  IDLE: 'idle',           // şık seçilebilir
+  SELECTING: 'selecting', // şık seçildi, onay bekleniyor
+  REVEALING: 'revealing', // cevap açıklanıyor
+  ENDED: 'ended'
+};
+
+const game = {
+  currentLevel: 0,
+  selectedAnswer: null,
+  state: STATE.IDLE,
+  lifelines: { fifty: true, audience: true, phone: true },
+  hiddenAnswers: [],
+  soundOn: true,
+
+  start() {
+    initAudio();
+    playSound('start');
+    document.getElementById('welcome').classList.remove('active');
+    document.getElementById('game').classList.add('active');
+    this.renderLadder();
+    this.loadQuestion();
+  },
+
+  renderLadder() {
+    const ladder = document.getElementById('ladder');
+    ladder.innerHTML = '';
+    PRIZES.forEach((prize, i) => {
+      const rung = document.createElement('div');
+      rung.className = 'rung';
+      if (SAFE_LEVELS.includes(i)) rung.classList.add('safe');
+      if (i === this.currentLevel) rung.classList.add('current');
+      else if (i < this.currentLevel) rung.classList.add('passed');
+      rung.innerHTML = `
+        <span><span class="rung-num">${i + 1}</span></span>
+        <span class="rung-amount">${formatMoney(prize)}</span>
+      `;
+      ladder.appendChild(rung);
+    });
+    setTimeout(() => {
+      const current = ladder.querySelector('.rung.current');
+      if (current) current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 50);
+  },
+
+  loadQuestion() {
+    this.state = STATE.IDLE;
+    this.selectedAnswer = null;
+    this.hiddenAnswers = [];
+    document.getElementById('counter').textContent = `Soru ${this.currentLevel + 1} / ${QUESTIONS.length}`;
+    document.getElementById('walk-away-btn').disabled = false;
+
+    const q = QUESTIONS[this.currentLevel];
+    document.getElementById('question-box').textContent = q.question;
+    const answersDiv = document.getElementById('answers');
+    answersDiv.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+    q.answers.forEach((answer, i) => {
+      const el = document.createElement('div');
+      el.className = 'answer';
+      el.dataset.index = i;
+      el.innerHTML = `<span class="letter">${letters[i]}:</span><span>${answer}</span>`;
+      el.onclick = () => this.selectAnswer(i);
+      answersDiv.appendChild(el);
+    });
+    playSound('next');
+  },
+
+  selectAnswer(index) {
+    if (this.state !== STATE.IDLE) return;
+    if (this.hiddenAnswers.includes(index)) return;
+
+    this.state = STATE.SELECTING;
+    this.selectedAnswer = index;
+    document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
+    document.querySelectorAll('.answer')[index].classList.add('selected');
+    document.getElementById('confirm-text').textContent =
+      ['A', 'B', 'C', 'D'][index] + ': ' + QUESTIONS[this.currentLevel].answers[index];
+    document.getElementById('modal-confirm').classList.add('active');
+    playSound('select');
+  },
+
+  confirmAnswer() {
+    document.getElementById('modal-confirm').classList.remove('active');
+    this.state = STATE.REVEALING;
+    document.getElementById('walk-away-btn').disabled = true;
+
+    const correctIndex = QUESTIONS[this.currentLevel].correct;
+    const answers = document.querySelectorAll('.answer');
+
+    playSound('lock');
+    playSound('thinking');
+
+    setTimeout(() => {
+      stopThinking();
+      if (this.selectedAnswer === correctIndex) {
+        answers[this.selectedAnswer].classList.add('correct');
+        playSound('correct');
+        setTimeout(() => this.next(), 3200);
+      } else {
+        answers[this.selectedAnswer].classList.remove('selected');
+        answers[this.selectedAnswer].classList.add('wrong');
+        setTimeout(() => answers[correctIndex].classList.add('correct'), 1000);
+        playSound('wrong');
+        setTimeout(() => this.gameOver('wrong'), 4500);
+      }
+    }, 2200);
+  },
+
+  cancelAnswer() {
+    document.getElementById('modal-confirm').classList.remove('active');
+    document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
+    this.selectedAnswer = null;
+    this.state = STATE.IDLE;
+  },
+
+  next() {
+    this.currentLevel++;
+    if (this.currentLevel >= QUESTIONS.length) {
+      this.gameOver('won');
+      return;
+    }
+    this.renderLadder();
+    this.loadQuestion();
+  },
+
+  guaranteedAmount() {
+    let amount = 0;
+    for (const safe of SAFE_LEVELS) {
+      if (this.currentLevel > safe) amount = PRIZES[safe];
+    }
+    return amount;
+  },
+
+  walkAwayAmount() {
+    if (this.currentLevel === 0) return 0;
+    return PRIZES[this.currentLevel - 1];
+  },
+
+  askWalkAway() {
+    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
+    if (this.state === STATE.SELECTING) this.cancelAnswer();
+    document.getElementById('walkaway-amount').textContent = formatMoney(this.walkAwayAmount());
+    document.getElementById('modal-walkaway').classList.add('active');
+  },
+
+  confirmWalkAway() {
+    this.closeModal('modal-walkaway');
+    this.gameOver('walkaway');
+  },
+
+  gameOver(reason) {
+    this.state = STATE.ENDED;
+    setTimeout(() => {
+      document.getElementById('game').classList.remove('active');
+      document.getElementById('end').classList.add('active');
+      const titleEl = document.getElementById('end-title');
+      const prizeEl = document.getElementById('end-prize');
+      const msgEl = document.getElementById('end-message');
+      const iconEl = document.getElementById('end-icon');
+
+      let amount, title, message, icon;
+      if (reason === 'won') {
+        amount = PRIZES[PRIZES.length - 1];
+        title = 'TEBRİKLER, MİLYONERSİN!';
+        message = 'Tüm 15 soruyu doğru yanıtladın. Efsane bir performans!';
+        icon = '🏆';
+        playSound('win');
+      } else if (reason === 'walkaway') {
+        amount = this.walkAwayAmount();
+        title = 'AKILLI BİR KARAR';
+        message = amount > 0
+          ? `Riske girmektense ${formatMoney(amount)} ile ayrıldın. İyi oyundu!`
+          : 'Hiç soru cevaplamadan ayrıldın. Bir dahaki sefere şansını dene!';
+        icon = '💼';
+        playSound('walkaway');
+      } else {
+        amount = this.guaranteedAmount();
+        title = 'OYUN BİTTİ';
+        message = amount > 0
+          ? `Yanlış cevap verdin ama garanti ödülün hâlâ duruyor: ${formatMoney(amount)}`
+          : 'Yanlış cevap verdin ve henüz garanti seviyeye ulaşmamıştın. Tekrar dene!';
+        icon = amount > 0 ? '🎯' : '😢';
+        playSound('gameover');
+      }
+      titleEl.textContent = title;
+      prizeEl.textContent = formatMoney(amount);
+      msgEl.textContent = message;
+      iconEl.textContent = icon;
+    }, 800);
+  },
+
+  /* === JOKERLER === */
+  useFiftyFifty() {
+    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
+    if (!this.lifelines.fifty) return;
+    if (this.state === STATE.SELECTING) this.cancelAnswer();
+
+    this.lifelines.fifty = false;
+    document.getElementById('ll-fifty').classList.add('used');
+
+    const correctIndex = QUESTIONS[this.currentLevel].correct;
+    const wrongIndices = [0, 1, 2, 3].filter(i => i !== correctIndex);
+    shuffle(wrongIndices);
+    const toHide = wrongIndices.slice(0, 2);
+    this.hiddenAnswers = toHide;
+    const answers = document.querySelectorAll('.answer');
+    toHide.forEach(i => answers[i].classList.add('hidden'));
+    playSound('lifeline');
+  },
+
+  useAudience() {
+    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
+    if (!this.lifelines.audience) return;
+    if (this.state === STATE.SELECTING) this.cancelAnswer();
+
+    this.lifelines.audience = false;
+    document.getElementById('ll-audience').classList.add('used');
+
+    const correctIndex = QUESTIONS[this.currentLevel].correct;
+    const visibleIndices = [0, 1, 2, 3].filter(i => !this.hiddenAnswers.includes(i));
+
+    // Yüzdeleri üret - doğru cevaba ağırlık ver
+    const difficulty = Math.min(this.currentLevel / 14, 1);
+    let correctPct = 70 - difficulty * 30 + (Math.random() * 15 - 5);
+    correctPct = Math.max(40, Math.min(85, Math.round(correctPct)));
+
+    if (visibleIndices.length === 2) correctPct = Math.max(60, correctPct);
+
+    const percentages = [0, 0, 0, 0];
+    percentages[correctIndex] = correctPct;
+    let remaining = 100 - correctPct;
+    const otherVisible = visibleIndices.filter(i => i !== correctIndex);
+    otherVisible.forEach((idx, i) => {
+      if (i === otherVisible.length - 1) {
+        percentages[idx] = remaining;
+      } else {
+        const portion = Math.round(Math.random() * remaining * 0.7) + 1;
+        percentages[idx] = portion;
+        remaining -= portion;
+      }
+    });
+
+    const barsDiv = document.getElementById('audience-bars');
+    barsDiv.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+    [0, 1, 2, 3].forEach(i => {
+      if (this.hiddenAnswers.includes(i)) return;
+      const col = document.createElement('div');
+      col.className = 'audience-col';
+      col.innerHTML = `
+        <div class="audience-percent">%${percentages[i]}</div>
+        <div class="audience-bar" data-pct="${percentages[i]}"></div>
+        <div class="audience-letter">${letters[i]}</div>
+      `;
+      barsDiv.appendChild(col);
+    });
+    document.getElementById('modal-audience').classList.add('active');
+    playSound('lifeline');
+    setTimeout(() => {
+      barsDiv.querySelectorAll('.audience-bar').forEach(bar => {
+        bar.style.height = bar.dataset.pct + '%';
+      });
+    }, 100);
+  },
+
+  usePhone() {
+    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
+    if (!this.lifelines.phone) return;
+    if (this.state === STATE.SELECTING) this.cancelAnswer();
+
+    this.lifelines.phone = false;
+    document.getElementById('ll-phone').classList.add('used');
+
+    const q = QUESTIONS[this.currentLevel];
+    const correctText = q.answers[q.correct];
+    const correctLetter = ['A', 'B', 'C', 'D'][q.correct];
+    const difficulty = this.currentLevel / 14;
+
+    const confidentReplies = [
+      `Bu sorunun cevabını biliyorum. Cevap kesinlikle ${correctLetter} şıkkı: "${correctText}". Çekinmeden işaretleyebilirsin.`,
+      `Çok kolay! Cevap ${correctLetter}, yani "${correctText}". Bu konuyu çok iyi biliyorum.`,
+      `Eminim, cevap ${correctLetter} şıkkıdır: "${correctText}". Lütfen onu işaretle.`
+    ];
+    const mediumReplies = [
+      `Hımm, sanırım cevap ${correctLetter} şıkkı yani "${correctText}" olmalı, ama %100 emin değilim.`,
+      `${correctLetter} şıkkı, "${correctText}", olabilir gibi geliyor. En azından bence en mantıklısı bu.`,
+      `Şıklara baktım da bence ${correctLetter}: "${correctText}". Ama son kararı sen ver.`
+    ];
+    const uncertainReplies = [
+      `Bu zor bir soru, çok emin değilim. Eğer mecbursan ben ${correctLetter} ("${correctText}") derim ama riskli.`,
+      `Çok zor. ${correctLetter} şıkkı, yani "${correctText}", olabileceğini düşünüyorum ama gerçekten emin değilim.`,
+      `Vallahi tam bilmiyorum, ama tahminim ${correctLetter}: "${correctText}". Yine de kararı sen ver.`
+    ];
+
+    let pool;
+    if (difficulty < 0.35) pool = confidentReplies;
+    else if (difficulty < 0.7) pool = mediumReplies;
+    else pool = uncertainReplies;
+
+    const reply = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('phone-text').textContent = '"' + reply + '"';
+    document.getElementById('modal-phone').classList.add('active');
+    playSound('lifeline');
+  },
+
+  closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  },
+
+  toggleSound() {
+    this.soundOn = !this.soundOn;
+    document.getElementById('sound-toggle').textContent = this.soundOn ? '🔊' : '🔇';
+    if (!this.soundOn) stopThinking();
+  }
+};
+
+function formatMoney(amount) {
+  return amount.toLocaleString('tr-TR') + ' ' + PARA_BIRIMI;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* =====================================================================
+   SES SİSTEMİ - Web Audio API ile sentezlenen sesler
+   ===================================================================== */
+let audioCtx = null;
+let thinkingNodes = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    audioCtx = null;
+  }
+}
+
+function playTone(freq, duration, type = 'sine', volume = 0.2, when = 0) {
+  if (!audioCtx || !game.soundOn) return null;
+  const t = audioCtx.currentTime + when;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(volume, t + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + duration + 0.05);
+  return { osc, gain };
+}
+
+function playSound(type) {
+  if (!audioCtx || !game.soundOn) return;
+  switch (type) {
+    case 'start':
+      playTone(523.25, 0.18, 'triangle', 0.18, 0);     // C5
+      playTone(659.25, 0.18, 'triangle', 0.18, 0.18);  // E5
+      playTone(783.99, 0.4, 'triangle', 0.22, 0.36);   // G5
+      break;
+    case 'next':
+      playTone(440, 0.08, 'sine', 0.12, 0);
+      playTone(660, 0.12, 'sine', 0.12, 0.05);
+      break;
+    case 'select':
+      playTone(800, 0.06, 'square', 0.08, 0);
+      break;
+    case 'lock':
+      playTone(110, 0.5, 'sawtooth', 0.18, 0);
+      playTone(82.5, 0.6, 'sine', 0.15, 0);
+      break;
+    case 'thinking':
+      startThinking();
+      break;
+    case 'correct':
+      playTone(523.25, 0.15, 'triangle', 0.18, 0);
+      playTone(659.25, 0.15, 'triangle', 0.18, 0.15);
+      playTone(783.99, 0.15, 'triangle', 0.18, 0.30);
+      playTone(1046.5, 0.4, 'triangle', 0.22, 0.45);
+      break;
+    case 'wrong':
+      playTone(220, 0.25, 'sawtooth', 0.18, 0);
+      playTone(165, 0.35, 'sawtooth', 0.18, 0.18);
+      playTone(110, 0.6, 'sawtooth', 0.18, 0.4);
+      break;
+    case 'lifeline':
+      playTone(660, 0.08, 'sine', 0.12, 0);
+      playTone(880, 0.08, 'sine', 0.12, 0.05);
+      playTone(1100, 0.12, 'sine', 0.12, 0.1);
+      break;
+    case 'walkaway':
+      playTone(880, 0.1, 'triangle', 0.18, 0);
+      playTone(1175, 0.15, 'triangle', 0.18, 0.1);
+      playTone(1568, 0.3, 'triangle', 0.18, 0.2);
+      break;
+    case 'gameover':
+      playTone(330, 0.3, 'sawtooth', 0.16, 0);
+      playTone(247, 0.3, 'sawtooth', 0.16, 0.25);
+      playTone(165, 0.6, 'sawtooth', 0.18, 0.5);
+      break;
+    case 'win':
+      [0, 0.18, 0.36, 0.54, 0.72].forEach((delay, i) => {
+        const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        playTone(notes[i], 0.18, 'triangle', 0.2, delay);
+      });
+      playTone(1568, 1.2, 'triangle', 0.25, 0.9);
+      playTone(2093, 1.2, 'triangle', 0.18, 0.9);
+      break;
+  }
+}
+
+function startThinking() {
+  if (!audioCtx || !game.soundOn || thinkingNodes) return;
+  const t = audioCtx.currentTime;
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+
+  osc1.type = 'sawtooth';
+  osc1.frequency.value = 55;
+  osc2.type = 'sine';
+  osc2.frequency.value = 82.5;
+  lfo.frequency.value = 4;
+  lfoGain.gain.value = 0.05;
+
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.12, t + 0.2);
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(gain.gain);
+  osc1.connect(gain);
+  osc2.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc1.start(t);
+  osc2.start(t);
+  lfo.start(t);
+
+  thinkingNodes = { osc1, osc2, lfo, gain };
+}
+
+function stopThinking() {
+  if (!thinkingNodes || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  thinkingNodes.gain.gain.cancelScheduledValues(t);
+  thinkingNodes.gain.gain.setValueAtTime(thinkingNodes.gain.gain.value, t);
+  thinkingNodes.gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+  thinkingNodes.osc1.stop(t + 0.2);
+  thinkingNodes.osc2.stop(t + 0.2);
+  thinkingNodes.lfo.stop(t + 0.2);
+  thinkingNodes = null;
+}
+
+/* Modal dışına tıklanınca onay/walkaway dışındakileri kapat */
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) {
+    const id = e.target.id;
+    if (id === 'modal-audience' || id === 'modal-phone') {
+      e.target.classList.remove('active');
+    }
+  }
+});
+
+/* Klavye kısayolları */
+document.addEventListener('keydown', (e) => {
+  if (game.state === STATE.IDLE) {
+    if (e.key === '1' || e.key.toLowerCase() === 'a') game.selectAnswer(0);
+    else if (e.key === '2' || e.key.toLowerCase() === 'b') game.selectAnswer(1);
+    else if (e.key === '3' || e.key.toLowerCase() === 'c') game.selectAnswer(2);
+    else if (e.key === '4' || e.key.toLowerCase() === 'd') game.selectAnswer(3);
+  } else if (game.state === STATE.SELECTING) {
+    if (e.key === 'Enter') game.confirmAnswer();
+    else if (e.key === 'Escape') game.cancelAnswer();
+  }
+});
+</script>
+</body>
+</html>

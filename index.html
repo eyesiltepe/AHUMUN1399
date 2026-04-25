@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050a30">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Who Wants to Be a Millionaire?</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ WELCOME SCREEN ============ -->
+<div id="welcome" class="screen welcome active">
+  <div class="welcome-logo">WHO WANTS<br>TO BE A MILLIONAIRE?</div>
+  <div class="welcome-subtitle">15 questions, $1,000,000 prize, 3 lifelines</div>
+  <button class="btn" onclick="game.start()">START GAME</button>
+</div>
+
+<!-- ============ GAME SCREEN ============ -->
+<div id="game" class="screen game">
+  <div class="game-grid">
+    <div class="play-area">
+      <div class="top-bar">
+        <span class="counter" id="counter">Question 1 / 15</span>
+        <div class="lifelines">
+          <div class="lifeline" id="ll-fifty" onclick="game.useFiftyFifty()" title="50:50 - Removes two wrong answers">50:50</div>
+          <div class="lifeline" id="ll-audience" onclick="game.useAudience()" title="Ask the audience">👥</div>
+          <div class="lifeline" id="ll-phone" onclick="game.usePhone()" title="Phone a friend">📞</div>
+        </div>
+        <button class="sound-toggle" id="sound-toggle" onclick="game.toggleSound()" title="Sound">🔊</button>
+      </div>
+      <div class="question-area">
+        <div class="question-box" id="question-box"></div>
+        <div class="answers" id="answers"></div>
+      </div>
+      <div class="footer">
+        <button class="walk-away" id="walk-away-btn" onclick="game.askWalkAway()">TAKE THE MONEY</button>
+      </div>
+    </div>
+    <div class="ladder-area" id="ladder"></div>
+  </div>
+</div>
+
+<!-- ============ END SCREEN ============ -->
+<div id="end" class="screen end">
+  <div class="end-icon" id="end-icon">🏆</div>
+  <h2 id="end-title"></h2>
+  <div class="prize-display" id="end-prize"></div>
+  <p id="end-message"></p>
+  <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
+</div>
+
+<!-- ============ MODALS ============ -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <h3>Is that your final answer?</h3>
+    <p id="confirm-text" style="color: var(--orange); font-weight: bold; font-size: 1.2rem;"></p>
+    <p style="font-size: 0.95rem; opacity: 0.85;">If you say yes, your answer will be locked in.</p>
+    <div class="confirm-buttons">
+      <button class="btn btn-yes" onclick="game.confirmAnswer()">YES, FINAL ANSWER</button>
+      <button class="btn btn-no" onclick="game.cancelAnswer()">NO, LET ME THINK</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-walkaway">
+  <div class="modal">
+    <h3>Are you sure you want to walk away?</h3>
+    <p style="font-size: 1.1rem;">You'll leave with <strong style="color: var(--gold); font-size: 1.3em;" id="walkaway-amount"></strong>.</p>
+    <div class="confirm-buttons">
+      <button class="btn btn-yes" onclick="game.confirmWalkAway()">YES, WALK AWAY</button>
+      <button class="btn btn-no" onclick="game.closeModal('modal-walkaway')">NO, KEEP PLAYING</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-audience">
+  <div class="modal">
+    <h3>👥 Audience Poll Results</h3>
+    <div class="audience-bars" id="audience-bars"></div>
+    <button class="btn" onclick="game.closeModal('modal-audience')">CONTINUE</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-phone">
+  <div class="modal">
+    <h3>📞 Your Friend on the Phone</h3>
+    <p id="phone-text" style="font-style: italic; font-size: 1.05rem; line-height: 1.6; color: var(--gold-light); margin: 22px 0;"></p>
+    <button class="btn" onclick="game.closeModal('modal-phone')">CONTINUE</button>
+  </div>
+</div>
+
+<!-- Load order matters: data first, then audio, then game logic -->
+<script src="questions.js"></script>
+<script src="audio.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
