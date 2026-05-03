@@ -101,6 +101,11 @@ body::before {
   flex: 1;
   text-align: center;
   color: var(--gold-light);
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  font-size: clamp(0.52rem, 1.2vw, 0.68rem);
+  max-width: 78%;
+  padding: 0 6px;
 }
 .strip-prize-top {
   color: rgba(226, 232, 240, 0.9);
@@ -1007,4 +1012,16 @@ body::before {
   .question-box { min-height: 60px; padding: 26px 16px 16px; margin-bottom: 10px; }
   .question-box::before { font-size: 0.5rem; letter-spacing: 0.15em; }
   .footer { margin-top: 8px; }
+}
+
+/* Optional per-question citation (see questions.js "source" field) */
+.question-source {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(203, 213, 225, 0.88);
+  text-align: center;
+  margin: -12px 0 16px;
+  padding: 0 12px;
+  line-height: 1.4;
+  font-style: italic;
 }
