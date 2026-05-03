@@ -2,9 +2,9 @@
    GAME LOGIC - State machine, lifelines, and event wiring.
 
    Depends on:
-     - ../questions/questions.js  — QUESTIONS, PRIZES, SAFE_LEVELS, BANK_QUESTION_COUNT,
-       buildQuestionSet(classic|study), formatMoney, pickAlternativeQuestion, …
-     - audio.js  — initAudio, playSound, stopThinking
+     - questions.js  (QUESTION_POOL, PRIZES, SAFE_LEVELS, QUESTIONS,
+                      buildQuestionSet, formatMoney, shuffle)
+     - audio.js      (initAudio, playSound, stopThinking)
    ===================================================================== */
 
 const STATE = {
@@ -18,15 +18,12 @@ const game = {
   currentLevel: 0,
   selectedAnswer: null,
   state: STATE.IDLE,
-  lifelines: { fifty: true, audience: true, phone: true, switch: true, clue: true },
+  lifelines: { fifty: true, audience: true, phone: true },
   hiddenAnswers: [],
   soundOn: true,
 
-  /**
-   * @param {'classic'|'study'} mode - classic = 15 (5 easy / 5 medium / 5 hard). study = entire bank shuffled.
-   */
-  start(mode = 'classic') {
-    buildQuestionSet(mode);
+  start() {
+    buildQuestionSet();
     initAudio();
     playSound('start');
     document.getElementById('welcome').classList.remove('active');
@@ -60,21 +57,11 @@ const game = {
     this.state = STATE.IDLE;
     this.selectedAnswer = null;
     this.hiddenAnswers = [];
-    document.getElementById('counter').textContent = `Round ${this.currentLevel + 1} / ${QUESTIONS.length}`;
+    document.getElementById('counter').textContent = `Question ${this.currentLevel + 1} / ${QUESTIONS.length}`;
     document.getElementById('walk-away-btn').disabled = false;
 
     const q = QUESTIONS[this.currentLevel];
     document.getElementById('question-box').textContent = q.question;
-    const srcEl = document.getElementById('question-source');
-    if (srcEl) {
-      if (q.source) {
-        srcEl.textContent = 'Source: ' + q.source;
-        srcEl.hidden = false;
-      } else {
-        srcEl.textContent = '';
-        srcEl.hidden = true;
-      }
-    }
     const answersDiv = document.getElementById('answers');
     answersDiv.innerHTML = '';
     const letters = ['A', 'B', 'C', 'D'];
@@ -186,7 +173,7 @@ const game = {
       if (reason === 'won') {
         amount = PRIZES[PRIZES.length - 1];
         title = "CONGRATULATIONS, YOU'RE A MILLIONAIRE!";
-        message = `You answered all ${QUESTIONS.length} rounds correctly — outstanding.`;
+        message = 'You answered all 15 questions correctly. A legendary performance!';
         icon = '🏆';
         playSound('win');
       } else if (reason === 'walkaway') {
@@ -219,18 +206,14 @@ const game = {
     if (!this.lifelines.fifty) return;
     if (this.state === STATE.SELECTING) this.cancelAnswer();
 
-    const correctIndex = QUESTIONS[this.currentLevel].correct;
-    const wrongIndices = [0, 1, 2, 3].filter(
-      i => i !== correctIndex && !this.hiddenAnswers.includes(i)
-    );
-    if (wrongIndices.length === 0) return;
-
     this.lifelines.fifty = false;
     document.getElementById('ll-fifty').classList.add('used');
+
+    const correctIndex = QUESTIONS[this.currentLevel].correct;
+    const wrongIndices = [0, 1, 2, 3].filter(i => i !== correctIndex);
     shuffle(wrongIndices);
-    const take = Math.min(2, wrongIndices.length);
-    const toHide = wrongIndices.slice(0, take);
-    this.hiddenAnswers = [...new Set([...this.hiddenAnswers, ...toHide])];
+    const toHide = wrongIndices.slice(0, 2);
+    this.hiddenAnswers = toHide;
     const answers = document.querySelectorAll('.answer');
     toHide.forEach(i => answers[i].classList.add('hidden'));
     playSound('lifeline');
@@ -247,8 +230,7 @@ const game = {
     const correctIndex = QUESTIONS[this.currentLevel].correct;
     const visibleIndices = [0, 1, 2, 3].filter(i => !this.hiddenAnswers.includes(i));
 
-    const denom = Math.max(1, QUESTIONS.length - 1);
-    const difficulty = Math.min(this.currentLevel / denom, 1);
+    const difficulty = Math.min(this.currentLevel / 14, 1);
     let correctPct = 70 - difficulty * 30 + (Math.random() * 15 - 5);
     correctPct = Math.max(40, Math.min(85, Math.round(correctPct)));
     if (visibleIndices.length === 2) correctPct = Math.max(60, correctPct);
@@ -301,8 +283,7 @@ const game = {
     const q = QUESTIONS[this.currentLevel];
     const correctText = q.answers[q.correct];
     const correctLetter = ['A', 'B', 'C', 'D'][q.correct];
-    const denom = Math.max(1, QUESTIONS.length - 1);
-    const difficulty = this.currentLevel / denom;
+    const difficulty = this.currentLevel / 14;
 
     const confidentReplies = [
       `I know this one. The answer is definitely ${correctLetter}: "${correctText}". Lock it in.`,
@@ -331,48 +312,6 @@ const game = {
     playSound('lifeline');
   },
 
-  useSwitchQuestion() {
-    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
-    if (!this.lifelines.switch) return;
-    if (this.state === STATE.SELECTING) this.cancelAnswer();
-
-    const replacement = pickAlternativeQuestion(this.currentLevel, QUESTIONS[this.currentLevel]);
-    if (!replacement) return;
-
-    this.lifelines.switch = false;
-    document.getElementById('ll-switch').classList.add('used');
-    QUESTIONS[this.currentLevel] = replacement;
-    this.loadQuestion();
-    playSound('lifeline');
-  },
-
-  useHostClue() {
-    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
-    if (!this.lifelines.clue) return;
-    if (this.state === STATE.SELECTING) this.cancelAnswer();
-
-    const correctIndex = QUESTIONS[this.currentLevel].correct;
-    const wrongPool = [0, 1, 2, 3].filter(
-      i => i !== correctIndex && !this.hiddenAnswers.includes(i)
-    );
-    if (wrongPool.length === 0) return;
-
-    this.lifelines.clue = false;
-    document.getElementById('ll-clue').classList.add('used');
-
-    shuffle(wrongPool);
-    const eliminated = wrongPool[0];
-    this.hiddenAnswers.push(eliminated);
-    const answers = document.querySelectorAll('.answer');
-    if (answers[eliminated]) answers[eliminated].classList.add('hidden');
-
-    const letter = ['A', 'B', 'C', 'D'][eliminated];
-    document.getElementById('clue-text').textContent =
-      `The booth agrees: answer ${letter} is not correct. Eliminate it and focus on what's left.`;
-    document.getElementById('modal-clue').classList.add('active');
-    playSound('lifeline');
-  },
-
   closeModal(id) {
     document.getElementById(id).classList.remove('active');
   },
@@ -398,7 +337,7 @@ window.addEventListener('orientationchange', () => setTimeout(setRealVh, 200));
 document.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) {
     const id = e.target.id;
-    if (id === 'modal-audience' || id === 'modal-phone' || id === 'modal-clue') {
+    if (id === 'modal-audience' || id === 'modal-phone') {
       e.target.classList.remove('active');
     }
   }
