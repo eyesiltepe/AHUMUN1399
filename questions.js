@@ -10,14 +10,15 @@
      {
        question: "Question text",
        answers:  ["A", "B", "C", "D"],
-       correct:  0   // 0=A, 1=B, 2=C, 3=D
+       correct:  0,          // 0=A, 1=B, 2=C, 3=D
+       source:   "optional" // shown under the question when the page has #question-source
      }
    ===================================================================== */
 
 const QUESTION_POOL = {
   easy: [
     // === GLOSSARY ===
-    { question: "Over how many years was the Qur'an revealed to the Prophet Muhammad (pbuh)?", answers: ["10 years", "15 years", "23 years", "30 years"], correct: 2 },
+    { question: "Over how many years was the Qur'an revealed to the Prophet Muhammad (pbuh)?", answers: ["10 years", "15 years", "23 years", "30 years"], correct: 2, source: "Course glossary / syllabus" },
     { question: "What is the Arabic term for the doctrine that the Qur'an cannot be imitated due to its divine nature?", answers: ["Fiṭra", "Iʿjāz", "Murūʾa", "ʿAṣabiyyah"], correct: 1 },
     { question: "What does the term 'adab' most closely compare to in the Greek tradition?", answers: ["Logos", "Paideia", "Techne", "Polis"], correct: 1 },
     { question: "What is the meaning of 'fanāʾ' in Sufi terminology?", answers: ["Subsistence in God", "Annihilation of the ego", "Unity of Being", "Group solidarity"], correct: 1 },
@@ -299,23 +300,100 @@ const QUESTION_POOL = {
   ]
 };
 
-const PRIZES = [
+const CLASSIC_PRIZES = [
   100, 200, 500, 1000, 2000,
   3000, 5000, 7500, 15000, 30000,
   60000, 125000, 250000, 500000, 1000000
 ];
 
-const SAFE_LEVELS = [4, 9]; // 5th and 10th questions are safe milestones
+/** Safe milestone indices when playing the classic 15-question ladder. */
+const CLASSIC_SAFE_LEVELS = [4, 9];
+
+/** Current ladder payouts (same length as QUESTIONS). Mutated when mode changes. */
+let PRIZES = CLASSIC_PRIZES.slice();
+
+/** Indices in PRIZES that are guaranteed levels for wrong-answer bailout. */
+let SAFE_LEVELS = CLASSIC_SAFE_LEVELS.slice();
+
 const CURRENCY = '$';
 
-/* The active 15-question set for the current game (rebuilt at every start). */
+/** Pool size exposed for the UI (welcome screen counts). */
+const BANK_QUESTION_COUNT =
+  QUESTION_POOL.easy.length + QUESTION_POOL.medium.length + QUESTION_POOL.hard.length;
+
+/** 'classic' = 15 random (5/5/5). 'study' = entire bank shuffled into one mega run. */
+let GAME_MODE = 'classic';
+
+/* The active ordered list for the current game session. */
 let QUESTIONS = [];
 
-function buildQuestionSet() {
+const LEVEL_TIER_BY_INDEX = [];
+for (let i = 0; i < 5; i++) LEVEL_TIER_BY_INDEX.push('easy');
+for (let i = 0; i < 5; i++) LEVEL_TIER_BY_INDEX.push('medium');
+for (let i = 0; i < 5; i++) LEVEL_TIER_BY_INDEX.push('hard');
+
+function cloneQuestion(q) {
+  const o = {
+    question: q.question,
+    answers: q.answers.slice(),
+    correct: q.correct
+  };
+  if (q.source) o.source = q.source;
+  return o;
+}
+
+function questionFingerprint(q) {
+  return q.question + '\0' + String(q.correct);
+}
+
+/** Smooth curve up to one million dollars for marathon runs. */
+function generatePrizeSteps(n) {
+  const min = 100;
+  const max = 1_000_000;
+  if (n <= 0) return [];
+  if (n === 1) return [max];
+  return Array.from({ length: n }, (_, i) => {
+    const t = i / (n - 1);
+    const curved = Math.pow(t, 1.35);
+    const step = min + (max - min) * curved;
+    return Math.round(step / 50) * 50;
+  });
+}
+
+/** Milestone checkpoints for study mode (~⅓ and ~⅔ through the ladder). */
+function milestoneIndicesForRoundCount(n) {
+  if (n < 8) {
+    const mid = Math.max(2, Math.min(n - 2, Math.floor(n / 2)));
+    const low = Math.max(1, Math.floor(mid / 2));
+    return [...new Set([low, mid].filter(i => i < n && i >= 1))].sort((x, y) => x - y);
+  }
+  const a = Math.floor(n / 3) - 1;
+  const b = Math.floor((2 * n) / 3) - 1;
+  return [...new Set([a, b])].filter(i => i >= 0 && i < n).sort((x, y) => x - y);
+}
+
+/**
+ * Prepares QUESTIONS plus PRIZES/SAFE_LEVELS for the chosen format.
+ * @param {'classic'|'study'} mode
+ */
+function buildQuestionSet(mode = 'classic') {
+  GAME_MODE = mode === 'study' ? 'study' : 'classic';
+
+  if (GAME_MODE === 'study') {
+    const bank = [...QUESTION_POOL.easy, ...QUESTION_POOL.medium, ...QUESTION_POOL.hard].map(cloneQuestion);
+    shuffle(bank);
+    QUESTIONS = bank;
+    PRIZES = generatePrizeSteps(QUESTIONS.length);
+    SAFE_LEVELS = milestoneIndicesForRoundCount(QUESTIONS.length);
+    return;
+  }
+
   const easy = pickN(QUESTION_POOL.easy, 5);
   const medium = pickN(QUESTION_POOL.medium, 5);
   const hard = pickN(QUESTION_POOL.hard, 5);
   QUESTIONS = [...easy, ...medium, ...hard];
+  PRIZES = CLASSIC_PRIZES.slice();
+  SAFE_LEVELS = CLASSIC_SAFE_LEVELS.slice();
 }
 
 function pickN(arr, n) {
@@ -334,4 +412,32 @@ function shuffle(arr) {
 
 function formatMoney(amount) {
   return CURRENCY + amount.toLocaleString('en-US');
+}
+
+/** Switch lifeline: another item from the tier (classic) or from the wider bank (study). */
+function pickAlternativeQuestion(levelIndex, currentQuestion) {
+  const curKey = questionFingerprint(currentQuestion);
+
+  if (GAME_MODE === 'study') {
+    const source = [...QUESTION_POOL.easy, ...QUESTION_POOL.medium, ...QUESTION_POOL.hard];
+    const pool = source.filter(q => questionFingerprint(q) !== curKey);
+    if (pool.length === 0) return null;
+    shuffle(pool);
+    const pick = pool[0];
+    return cloneQuestion(pick);
+  }
+
+  const tier = LEVEL_TIER_BY_INDEX[levelIndex] || 'medium';
+  const source = QUESTION_POOL[tier] || [];
+  const pool = source.filter(q => questionFingerprint(q) !== curKey);
+  let pick;
+  if (pool.length > 0) {
+    shuffle(pool);
+    pick = pool[0];
+  } else if (source.length > 0) {
+    pick = source[Math.floor(Math.random() * source.length)];
+  } else {
+    return null;
+  }
+  return cloneQuestion(pick);
 }
