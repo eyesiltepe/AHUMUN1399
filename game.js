@@ -362,125 +362,290 @@ const game = {
 
   /* === CLASSMATES POOL ===
      Real students from AHUM UN1399 (Spring 2026). Each has a distinct
-     personality that flavors how they answer the phone. They always know
-     the correct answer (they took the same readings!) but their delivery
-     differs - some confident, some hesitant, some funny. */
+     "specialty" or quirk that flavors how they hint at the answer.
+     They never give the answer directly - they steer you toward it. */
   classmates: [
-    { name: "Shehar Bano", style: "thoughtful", tip: "She always reads the footnotes" },
-    { name: "Juliana Bryant", style: "confident", tip: "She never misses a class" },
-    { name: "Ines Caldara", style: "scholarly", tip: "She memorizes glossaries for fun" },
-    { name: "Ibrahim Ibrahim", style: "casual", tip: "He has a sixth sense for these" },
-    { name: "Michael Ishak", style: "analytical", tip: "He cross-references every answer" },
-    { name: "Shunammite Jiwanmall", style: "warm", tip: "She loves the Sufi readings most" },
-    { name: "Nafeesa Mahmood", style: "precise", tip: "She color-codes her notes" },
-    { name: "Pranav Manoj", style: "philosophical", tip: "He wrote a paper on Ibn Tufayl" },
-    { name: "Lucy Markow", style: "witty", tip: "She has the syllabus memorized" },
-    { name: "Jason McCord", style: "humble", tip: "He second-guesses, but he's usually right" },
-    { name: "Narges Noorbakhsh", style: "poetic", tip: "She quotes Rumi in everyday conversation" },
-    { name: "Lynsey Overturf", style: "decisive", tip: "She doesn't hesitate" },
-    { name: "Andrea Riccelli", style: "dramatic", tip: "He treats every answer like a final argument" },
-    { name: "Yuval Shemla", style: "calm", tip: "Nothing rattles him" },
-    { name: "Luke Suess", style: "energetic", tip: "He always sounds excited to help" },
-    { name: "Nina Wang", style: "meticulous", tip: "She probably has a flashcard for this" }
+    { name: "Shehar Bano", quirk: "footnote nerd", style: "thoughtful" },
+    { name: "Juliana Bryant", quirk: "perfect attendance", style: "confident" },
+    { name: "Ines Caldara", quirk: "glossary obsessive", style: "scholarly" },
+    { name: "Ibrahim Ibrahim", quirk: "vibes-based reasoning", style: "casual" },
+    { name: "Michael Ishak", quirk: "logic puzzle solver", style: "analytical" },
+    { name: "Shunammite Jiwanmall", quirk: "Sufi enthusiast", style: "warm" },
+    { name: "Nafeesa Mahmood", quirk: "color-coded notes", style: "precise" },
+    { name: "Pranav Manoj", quirk: "wrote his paper on Ibn Tufayl", style: "philosophical" },
+    { name: "Lucy Markow", quirk: "syllabus memorized", style: "witty" },
+    { name: "Jason McCord", quirk: "second-guesser, usually right", style: "humble" },
+    { name: "Narges Noorbakhsh", quirk: "quotes Rumi at brunch", style: "poetic" },
+    { name: "Lynsey Overturf", quirk: "no-nonsense", style: "decisive" },
+    { name: "Andrea Riccelli", quirk: "law school energy", style: "dramatic" },
+    { name: "Yuval Shemla", quirk: "calm under pressure", style: "calm" },
+    { name: "Luke Suess", quirk: "human exclamation point", style: "energetic" },
+    { name: "Nina Wang", quirk: "flashcard queen", style: "meticulous" }
   ],
 
-  buildPhoneReply(classmate, correctLetter, correctText) {
-    // Templates per personality style; each returns a confident-correct answer
-    // because every classmate took the readings (this is a 'real friend' bonus!).
-    const templates = {
-      thoughtful: [
-        `Hmm, let me think... yes, it's ${correctLetter}: "${correctText}". I remember this from the reading.`,
-        `Give me a sec... okay, the answer is ${correctLetter}, "${correctText}". I'm pretty sure.`
-      ],
-      confident: [
-        `That's ${correctLetter}: "${correctText}". Easy. Lock it in.`,
-        `${correctLetter}, "${correctText}". 100%. Move on.`
-      ],
-      scholarly: [
-        `According to the glossary, the answer is ${correctLetter}: "${correctText}". Definitely.`,
-        `Based on the readings, it's ${correctLetter}, "${correctText}". I have notes on this.`
-      ],
-      casual: [
-        `Oh, that one? Yeah it's ${correctLetter}, "${correctText}". No worries.`,
-        `Bro, it's ${correctLetter}: "${correctText}". You got this.`
-      ],
-      analytical: [
-        `Cross-referencing the source... the answer is ${correctLetter}: "${correctText}".`,
-        `Logically the answer is ${correctLetter}, "${correctText}". The other options don't hold up.`
-      ],
-      warm: [
-        `Oh sweetie, the answer is ${correctLetter}: "${correctText}". You've got this!`,
-        `Don't worry, it's ${correctLetter}, "${correctText}". I believe in you!`
-      ],
-      precise: [
-        `The answer is ${correctLetter}: "${correctText}". I have it underlined in my notes.`,
-        `Exactly ${correctLetter}, "${correctText}". Page reference and everything.`
-      ],
-      philosophical: [
-        `Ah, this question reaches the essence of the matter. The answer is ${correctLetter}: "${correctText}".`,
-        `In the spirit of the text itself, ${correctLetter}, "${correctText}", is the truth.`
-      ],
-      witty: [
-        `Oh, did Sarah Bin Tyeer write this one? It's ${correctLetter}: "${correctText}". Obviously.`,
-        `${correctLetter}, "${correctText}". I'd bet my participation grade on it.`
-      ],
-      humble: [
-        `I think... I mean I'm pretty sure... it's ${correctLetter}: "${correctText}". Yeah, go with that.`,
-        `Don't quote me, but I'm fairly confident it's ${correctLetter}, "${correctText}".`
-      ],
-      poetic: [
-        `As the Persian masters would say - the answer is ${correctLetter}: "${correctText}".`,
-        `${correctLetter}, "${correctText}". Like a hoopoe, the answer flies straight to me.`
-      ],
-      decisive: [
-        `${correctLetter}: "${correctText}". Done. Next question.`,
-        `It's ${correctLetter}, "${correctText}". Don't overthink it.`
-      ],
-      dramatic: [
-        `Ladies and gentlemen of the jury - the answer is ${correctLetter}: "${correctText}"!`,
-        `Without a shadow of a doubt: ${correctLetter}, "${correctText}". I rest my case.`
-      ],
-      calm: [
-        `Yes, the answer is ${correctLetter}: "${correctText}". Take a breath. You're fine.`,
-        `${correctLetter}, "${correctText}". Stay calm, lock it in.`
-      ],
-      energetic: [
-        `OH I KNOW THIS ONE!! It's ${correctLetter}: "${correctText}"!!! Go go go!`,
-        `Yes! ${correctLetter}, "${correctText}"! I just covered this in my study group!`
-      ],
-      meticulous: [
-        `Hold on, checking my flashcards... yes, ${correctLetter}: "${correctText}". Confirmed.`,
-        `Per my notes from week three, the answer is ${correctLetter}, "${correctText}".`
-      ]
+  /* Stash for the multi-step phone lifeline */
+  phonePending: null,
+
+  /**
+   * Build a HINT (not the direct answer) that steers the player toward the
+   * correct option without naming it. Each hint:
+   *  - eliminates one wrong option (always), OR
+   *  - hints at the position of the correct answer with a clue, OR
+   *  - quotes the correct answer's first words / hints at a theme
+   * The HINT delivery is shaped by the classmate's personality.
+   */
+  buildPhoneHint(classmate, q) {
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    const correctIndex = q.correct;
+    const correctText = q.answers[correctIndex];
+    const correctLetter = letters[correctIndex];
+
+    // Pick a wrong index that hasn't been eliminated by 50:50, to "steer away from"
+    const wrongIndices = q.answers
+      .map((_, i) => i)
+      .filter(i => i !== correctIndex && !this.hiddenAnswers.includes(i));
+
+    // Two hint techniques, chosen randomly
+    const technique = Math.random() < 0.5 ? 'eliminate' : 'narrow';
+
+    // The first 3-5 words of the correct answer (as a teaser)
+    const firstWords = correctText.split(/\s+/).slice(0, 3).join(' ');
+
+    let hint;
+    if (technique === 'eliminate' && wrongIndices.length > 0) {
+      const eliminated = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
+      const elimLetter = letters[eliminated];
+      hint = { kind: 'eliminate', letter: elimLetter };
+    } else {
+      // Narrow toward correct: teaser + nearby letter range
+      hint = { kind: 'narrow', firstWords, letter: correctLetter };
+    }
+
+    return this.phrasePhoneHint(classmate, hint);
+  },
+
+  phrasePhoneHint(classmate, hint) {
+    // Personality-flavored hint phrasings.
+    // Each style has variants for both 'eliminate' and 'narrow' hint kinds.
+    const phrasings = {
+      thoughtful: {
+        eliminate: [
+          `Hmm, let me think... I'm pretty sure it's NOT ${hint.letter}. Rule that one out.`,
+          `Give me a second... I remember crossing out ${hint.letter} in my notes. Don't pick it.`
+        ],
+        narrow: [
+          `I'm fairly sure the right answer starts with the words "${hint.firstWords}..." — does that match one of your options?`,
+          `From what I recall, the answer begins with something like "${hint.firstWords}..." — go from there.`
+        ]
+      },
+      confident: {
+        eliminate: [
+          `${hint.letter}? No way. That's wrong. Eliminate it.`,
+          `Whatever you do, don't pick ${hint.letter}. I'm telling you.`
+        ],
+        narrow: [
+          `Look for the option that starts with "${hint.firstWords}..." — that's the one.`,
+          `The right answer begins "${hint.firstWords}..." — find it.`
+        ]
+      },
+      scholarly: {
+        eliminate: [
+          `According to my notes, ${hint.letter} is definitively incorrect. Discard it.`,
+          `${hint.letter} is a common distractor — it's wrong. Move on.`
+        ],
+        narrow: [
+          `The accurate response in the readings opens with "${hint.firstWords}..." — that's your direction.`,
+          `From the glossary, the correct phrasing starts "${hint.firstWords}..." — match it.`
+        ]
+      },
+      casual: {
+        eliminate: [
+          `Bro, ${hint.letter} is a trap. Don't fall for it.`,
+          `Yeah, ${hint.letter}? Skip it. Trust me.`
+        ],
+        narrow: [
+          `Look for something like "${hint.firstWords}..." — that's the vibe of the right answer.`,
+          `The answer kinda starts with "${hint.firstWords}..." — you'll see it.`
+        ]
+      },
+      analytical: {
+        eliminate: [
+          `By process of elimination — ${hint.letter} is logically inconsistent. Cross it out.`,
+          `${hint.letter} contradicts the source material. It's wrong.`
+        ],
+        narrow: [
+          `The correct response begins with "${hint.firstWords}..." — that's where the logic points.`,
+          `Pattern-matching from the readings: the right answer opens "${hint.firstWords}..."`
+        ]
+      },
+      warm: {
+        eliminate: [
+          `Aw sweetie, ${hint.letter} is wrong. Just don't pick that one and you'll be fine!`,
+          `Oh honey, skip ${hint.letter} — it's a trap! You've got this!`
+        ],
+        narrow: [
+          `The right answer starts with something like "${hint.firstWords}..." — I believe in you!`,
+          `Look for "${hint.firstWords}..." — you'll see it, sweetie!`
+        ]
+      },
+      precise: {
+        eliminate: [
+          `${hint.letter} is incorrect. Underlined in my notes. Eliminate.`,
+          `Not ${hint.letter}. I have it in red ink. Skip.`
+        ],
+        narrow: [
+          `Correct answer begins: "${hint.firstWords}..." — verbatim from the text.`,
+          `The exact wording starts with "${hint.firstWords}..." — find that option.`
+        ]
+      },
+      philosophical: {
+        eliminate: [
+          `Truth is rarely found in ${hint.letter}. Look elsewhere.`,
+          `${hint.letter} is a shadow on the wall, not the form itself. Discard it.`
+        ],
+        narrow: [
+          `The essence of the answer begins with "${hint.firstWords}..." — meditate on that.`,
+          `Seek the option that opens with "${hint.firstWords}..." — therein lies the truth.`
+        ]
+      },
+      witty: {
+        eliminate: [
+          `${hint.letter}? Sarah Bin Tyeer would weep. It's wrong.`,
+          `If you pick ${hint.letter}, I'm changing my number. Don't.`
+        ],
+        narrow: [
+          `The right one starts "${hint.firstWords}..." — like, obviously.`,
+          `Look for "${hint.firstWords}..." — it's the only one that doesn't sound made up.`
+        ]
+      },
+      humble: {
+        eliminate: [
+          `I think... I mean, I'm pretty sure... ${hint.letter} is not it. Probably skip it.`,
+          `Don't quote me, but ${hint.letter} feels wrong. I'd avoid it.`
+        ],
+        narrow: [
+          `I might be off, but I think the answer starts with "${hint.firstWords}..." — that ring a bell?`,
+          `Maybe look for something like "${hint.firstWords}..."? I think that's it.`
+        ]
+      },
+      poetic: {
+        eliminate: [
+          `${hint.letter} is the nightingale's excuse — alluring, but a distraction. Pass.`,
+          `Like the duck who would not leave the pond, ${hint.letter} stays put. It is wrong.`
+        ],
+        narrow: [
+          `The hoopoe whispers: the answer begins with "${hint.firstWords}..."`,
+          `As if from the Conference itself: look for "${hint.firstWords}..." — it leads to truth.`
+        ]
+      },
+      decisive: {
+        eliminate: [
+          `Not ${hint.letter}. Done. Move on.`,
+          `${hint.letter}: wrong. Next.`
+        ],
+        narrow: [
+          `Starts with "${hint.firstWords}..." — pick it.`,
+          `"${hint.firstWords}..." — that's your answer. Lock it.`
+        ]
+      },
+      dramatic: {
+        eliminate: [
+          `Ladies and gentlemen of the jury — ${hint.letter} is FALSE! Strike it from the record!`,
+          `Objection! ${hint.letter} is a baseless claim. Strike it.`
+        ],
+        narrow: [
+          `The truth, your honor, begins with the words "${hint.firstWords}..."!`,
+          `I submit to the court that the answer opens "${hint.firstWords}..."`
+        ]
+      },
+      calm: {
+        eliminate: [
+          `Take a breath. ${hint.letter} is not it. You're fine.`,
+          `Easy now. ${hint.letter} is wrong. Just skip it and you'll see the answer.`
+        ],
+        narrow: [
+          `Slow down. The answer starts with "${hint.firstWords}..." — find it calmly.`,
+          `Breathe. Look for "${hint.firstWords}..." — it's right there.`
+        ]
+      },
+      energetic: {
+        eliminate: [
+          `NOT ${hint.letter}!! TRUST ME!! Skip skip skip!`,
+          `${hint.letter} IS A TRAP!! Avoid! GO GO GO!`
+        ],
+        narrow: [
+          `THE ANSWER STARTS WITH "${hint.firstWords}..."!! YES!! GO!!`,
+          `LOOK FOR "${hint.firstWords}..."!! YOU'VE GOT THIS!!`
+        ]
+      },
+      meticulous: {
+        eliminate: [
+          `Checking flashcards... ${hint.letter}: incorrect. Confirmed wrong.`,
+          `Per my week-three notes, ${hint.letter} is not the answer. Eliminate.`
+        ],
+        narrow: [
+          `Per flashcard #47: the correct response begins "${hint.firstWords}..." — verified.`,
+          `My notes show the answer starting with "${hint.firstWords}..." — page reference available on request.`
+        ]
+      }
     };
-    const pool = templates[classmate.style] || templates.confident;
+
+    const styleSet = phrasings[classmate.style] || phrasings.confident;
+    const pool = styleSet[hint.kind];
     return pool[Math.floor(Math.random() * pool.length)];
   },
 
+  /**
+   * STEP 1 of the phone lifeline: pick 3 random classmates and let the
+   * user choose who to call. The lifeline is NOT consumed yet (only on confirm).
+   */
   usePhone() {
     if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
     if (!this.lifelines.phone) return;
     if (this.state === STATE.SELECTING) this.cancelAnswer();
 
+    // Pick 3 random distinct classmates
+    const pool = this.classmates.slice();
+    shuffle(pool);
+    const candidates = pool.slice(0, 3);
+    this.phonePending = candidates;
+
+    // Render the picker modal
+    const pickerEl = document.getElementById('phone-picker');
+    pickerEl.innerHTML =
+      `<div class="phone-picker-prompt">Three of your classmates are available. Who do you want to call?</div>` +
+      candidates.map((c, i) =>
+        `<button class="phone-candidate" onclick="game.callClassmate(${i})">` +
+          `<div class="phone-candidate-name">${c.name}</div>` +
+          `<div class="phone-candidate-quirk">${c.quirk}</div>` +
+        `</button>`
+      ).join('');
+    document.getElementById('modal-phone-picker').classList.add('active');
+    playSound('lifeline');
+  },
+
+  /**
+   * STEP 2: user picked a classmate. Consume the lifeline, close the picker,
+   * show the hint modal with that person's flavored hint.
+   */
+  callClassmate(index) {
+    if (!this.phonePending) return;
+    const classmate = this.phonePending[index];
+    this.phonePending = null;
     this.lifelines.phone = false;
     document.getElementById('ll-phone').classList.add('used');
+    this.closeModal('modal-phone-picker');
 
     const q = QUESTIONS[this.currentLevel];
-    const correctText = q.answers[q.correct];
-    const correctLetter = ['A', 'B', 'C', 'D', 'E'][q.correct];
+    const hintText = this.buildPhoneHint(classmate, q);
 
-    // Pick a random classmate
-    const classmate = this.classmates[Math.floor(Math.random() * this.classmates.length)];
-    const reply = this.buildPhoneReply(classmate, correctLetter, correctText);
-
-    // Compose the modal: who's calling + their reply + the tip
     const phoneEl = document.getElementById('phone-text');
     phoneEl.innerHTML =
-      `<div class="phone-caller">📞 Calling ${classmate.name}...</div>` +
-      `<div class="phone-reply">"${reply}"</div>` +
-      `<div class="phone-tip">💡 Tip: ${classmate.tip}</div>`;
+      `<div class="phone-caller">📞 ${classmate.name} picks up...</div>` +
+      `<div class="phone-reply">"${hintText}"</div>` +
+      `<div class="phone-tip">💡 Hint, not the answer — you decide.</div>`;
     document.getElementById('modal-phone').classList.add('active');
-    playSound('lifeline');
+    playSound('select');
   },
 
   useSarah() {
