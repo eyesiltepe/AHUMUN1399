@@ -146,6 +146,34 @@ body::before {
   min-height: calc(var(--vh, 1vh) * 100);
   text-align: center;
   padding: 72px 20px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.welcome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('columbia-logo.png');
+  background-repeat: no-repeat;
+  background-position: center 48%;
+  background-size: clamp(700px, 130vw, 1400px) auto;
+  filter: invert(1) brightness(1.5) sepia(0.4) hue-rotate(15deg) saturate(2.2);
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+.welcome::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(2, 6, 23, 0.55) 70%, rgba(2, 6, 23, 0.85) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+.welcome > * {
+  position: relative;
+  z-index: 2;
 }
 .welcome-logo {
   font-family: var(--font-display);
@@ -492,6 +520,16 @@ body::before {
 }
 .lifeline-clue {
   border-color: rgba(244, 114, 182, 0.75);
+}
+.lifeline-sarah {
+  border-color: var(--gold);
+  background: radial-gradient(circle at 35% 30%, rgba(250, 204, 21, 0.35), rgba(161, 98, 7, 0.4) 65%, var(--bg-deep) 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 16px rgba(250, 204, 21, 0.35);
+  animation: sarah-pulse 2.4s ease-in-out infinite;
+}
+@keyframes sarah-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 16px rgba(250, 204, 21, 0.35); }
+  50%      { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 28px rgba(250, 204, 21, 0.65); }
 }
 .lifeline:hover:not(.used):not(.locked) {
   transform: scale(1.12) translateY(-3px);
@@ -1063,47 +1101,4 @@ body::before {
   padding: 0 12px;
   line-height: 1.4;
   font-style: italic;
-}
-
-/* === WISDOM TOAST — mystical quote overlay === */
-#wisdom-toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.85);
-  z-index: 9999;
-  background: radial-gradient(ellipse at center, rgba(5, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.92) 100%);
-  border: 1px solid rgba(250, 204, 21, 0.25);
-  border-radius: 16px;
-  padding: 32px 40px;
-  max-width: 520px;
-  width: 90vw;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  box-shadow:
-    0 0 60px rgba(250, 204, 21, 0.08),
-    0 0 120px rgba(250, 204, 21, 0.04),
-    inset 0 0 40px rgba(250, 204, 21, 0.03);
-}
-#wisdom-toast.show {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-.wisdom-text {
-  font-family: 'Georgia', 'Noto Serif', serif;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  color: var(--gold-light);
-  line-height: 1.7;
-  font-style: italic;
-  margin-bottom: 14px;
-}
-.wisdom-author {
-  font-family: var(--font-ui);
-  font-size: clamp(0.78rem, 1.8vw, 0.92rem);
-  color: var(--gold);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  opacity: 0.85;
 }

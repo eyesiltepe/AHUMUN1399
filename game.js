@@ -14,57 +14,11 @@ const STATE = {
   ENDED: 'ended'
 };
 
-/* === MYSTICAL WISDOM QUOTES — shown on every correct answer, never repeats === */
-const WISDOM_QUOTES = [
-  { text: "The wound is the place where the Light enters you.", author: "Rūmī" },
-  { text: "Silence is the language of God; all else is poor translation.", author: "Rūmī" },
-  { text: "What you seek is seeking you.", author: "Rūmī" },
-  { text: "Let yourself be silently drawn by the strange pull of what you really love.", author: "Rūmī" },
-  { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "Rūmī" },
-  { text: "Do not be satisfied with the stories that come before you. Unfold your own myth.", author: "Rūmī" },
-  { text: "The soul has been given its own ears to hear things the mind does not understand.", author: "Rūmī" },
-  { text: "If you are irritated by every rub, how will your mirror be polished?", author: "Rūmī" },
-  { text: "The eye is the lamp of the body. When the eye is clear, the whole body is bathed in light.", author: "Al-Ghazālī" },
-  { text: "Knowledge without action is vanity, and action without knowledge is insanity.", author: "Al-Ghazālī" },
-  { text: "The real voyage of discovery consists not in seeking new landscapes but in having new eyes.", author: "Ibn ʿArabī" },
-  { text: "God is beautiful and loves beauty.", author: "Hadith of the Prophet" },
-  { text: "My heart has become capable of every form: a pasture for gazelles, a cloister for monks.", author: "Ibn ʿArabī" },
-  { text: "When the heart weeps for what it has lost, the spirit laughs for what it has found.", author: "Sufi proverb" },
-  { text: "Die before you die, and find that there is no death.", author: "Rūmī" },
-  { text: "The seeker is a finder.", author: "Sufi proverb" },
-  { text: "Be like the sun for grace and mercy. Be like the night to cover others' faults.", author: "Rūmī" },
-  { text: "In their narratives is a lesson to those possessed of minds.", author: "Qur'an 12:111" },
-  { text: "Whoever knows himself knows his Lord.", author: "Hadith of the Prophet" },
-  { text: "The ink of the scholar is holier than the blood of the martyr.", author: "Hadith of the Prophet" },
-  { text: "He who has a thousand friends has not a friend to spare.", author: "ʿAlī ibn Abī Ṭālib" },
-  { text: "Patience is the key to relief.", author: "ʿAlī ibn Abī Ṭālib" },
-  { text: "People are asleep; when they die, they awaken.", author: "ʿAlī ibn Abī Ṭālib" },
-  { text: "The bird of paradise alights only upon the hand that does not grasp.", author: "Sufi proverb" },
-  { text: "The cure for ignorance is to question.", author: "Hadith of the Prophet" },
-  { text: "God does not look at your forms and possessions, but at your hearts and your deeds.", author: "Hadith of the Prophet" },
-  { text: "To God alone do I complain of my heartache and my sorrow.", author: "Qur'an 12:86 (Jacob)" },
-  { text: "O seemly patience! God's help against that which you describe!", author: "Qur'an 12:18 (Jacob)" },
-  { text: "Above every person possessed of knowledge is One All-Knowing.", author: "Qur'an 12:76" },
-  { text: "We raise whomever We will in rank.", author: "Qur'an 12:76" },
-  { text: "Travel is a fragment of Hell — but also a fragment of Paradise.", author: "Sufi proverb" },
-  { text: "The world is a bridge. Cross it, but do not build upon it.", author: "Attributed to ʿĪsā (Jesus)" },
-  { text: "Do you need a candle to see the sun?", author: "Ibn Ṭufayl (Ḥayy ibn Yaqẓān)" },
-  { text: "If you want to know God, know yourself first.", author: "Sufi proverb" },
-  { text: "The greatest jihad is the struggle against one's own soul.", author: "Hadith of the Prophet" },
-  { text: "No blame shall fall upon you; today, God forgives you.", author: "Qur'an 12:92 (Joseph)" },
-  { text: "Seek knowledge, even unto China.", author: "Hadith of the Prophet" },
-  { text: "A slight to the work is an affront to its Maker.", author: "Ikhwān al-Ṣafāʾ" },
-  { text: "Stories are a weapon that sustains life against the threat of oblivion.", author: "Inspired by Shahrazad" },
-  { text: "In the story of Joseph and his brothers there were clear signs to those who seek answers.", author: "Qur'an 12:7" },
-];
-
-let wisdomUsed = [];
-
 const game = {
   currentLevel: 0,
   selectedAnswer: null,
   state: STATE.IDLE,
-  lifelines: { fifty: true, audience: true, phone: true, switch: true, clue: true },
+  lifelines: { fifty: true, audience: true, phone: true, sarah: true, switch: true, clue: true },
   hiddenAnswers: [],
   soundOn: true,
 
@@ -123,7 +77,7 @@ const game = {
     }
     const answersDiv = document.getElementById('answers');
     answersDiv.innerHTML = '';
-    const letters = ['A', 'B', 'C', 'D'];
+    const letters = ['A', 'B', 'C', 'D', 'E'];
     q.answers.forEach((answer, i) => {
       const el = document.createElement('div');
       el.className = 'answer';
@@ -144,7 +98,7 @@ const game = {
     document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
     document.querySelectorAll('.answer')[index].classList.add('selected');
     document.getElementById('confirm-text').textContent =
-      ['A', 'B', 'C', 'D'][index] + ': ' + QUESTIONS[this.currentLevel].answers[index];
+      ['A', 'B', 'C', 'D', 'E'][index] + ': ' + QUESTIONS[this.currentLevel].answers[index];
     document.getElementById('modal-confirm').classList.add('active');
     playSound('select');
   },
@@ -165,8 +119,7 @@ const game = {
       if (this.selectedAnswer === correctIndex) {
         answers[this.selectedAnswer].classList.add('correct');
         playSound('correct');
-        showWisdomToast();
-        setTimeout(() => this.next(), 4200);
+        setTimeout(() => this.next(), 3200);
       } else {
         answers[this.selectedAnswer].classList.remove('selected');
         answers[this.selectedAnswer].classList.add('wrong');
@@ -267,7 +220,9 @@ const game = {
     if (this.state === STATE.SELECTING) this.cancelAnswer();
 
     const correctIndex = QUESTIONS[this.currentLevel].correct;
-    const wrongIndices = [0, 1, 2, 3].filter(
+    const numAnswers = QUESTIONS[this.currentLevel].answers.length;
+    const allIndices = Array.from({ length: numAnswers }, (_, i) => i);
+    const wrongIndices = allIndices.filter(
       i => i !== correctIndex && !this.hiddenAnswers.includes(i)
     );
     if (wrongIndices.length === 0) return;
@@ -275,8 +230,10 @@ const game = {
     this.lifelines.fifty = false;
     document.getElementById('ll-fifty').classList.add('used');
     shuffle(wrongIndices);
-    const take = Math.min(2, wrongIndices.length);
-    const toHide = wrongIndices.slice(0, take);
+    // Hide enough wrong answers to leave 2 visible (the correct one + 1 wrong)
+    const visibleCount = numAnswers - this.hiddenAnswers.length;
+    const toHideCount = Math.max(0, visibleCount - 2);
+    const toHide = wrongIndices.slice(0, toHideCount);
     this.hiddenAnswers = [...new Set([...this.hiddenAnswers, ...toHide])];
     const answers = document.querySelectorAll('.answer');
     toHide.forEach(i => answers[i].classList.add('hidden'));
@@ -292,7 +249,9 @@ const game = {
     document.getElementById('ll-audience').classList.add('used');
 
     const correctIndex = QUESTIONS[this.currentLevel].correct;
-    const visibleIndices = [0, 1, 2, 3].filter(i => !this.hiddenAnswers.includes(i));
+    const numAnswers = QUESTIONS[this.currentLevel].answers.length;
+    const allIndices = Array.from({ length: numAnswers }, (_, i) => i);
+    const visibleIndices = allIndices.filter(i => !this.hiddenAnswers.includes(i));
 
     const denom = Math.max(1, QUESTIONS.length - 1);
     const difficulty = Math.min(this.currentLevel / denom, 1);
@@ -300,7 +259,7 @@ const game = {
     correctPct = Math.max(40, Math.min(85, Math.round(correctPct)));
     if (visibleIndices.length === 2) correctPct = Math.max(60, correctPct);
 
-    const percentages = [0, 0, 0, 0];
+    const percentages = new Array(numAnswers).fill(0);
     percentages[correctIndex] = correctPct;
     let remaining = 100 - correctPct;
     const otherVisible = visibleIndices.filter(i => i !== correctIndex);
@@ -316,8 +275,8 @@ const game = {
 
     const barsDiv = document.getElementById('audience-bars');
     barsDiv.innerHTML = '';
-    const letters = ['A', 'B', 'C', 'D'];
-    [0, 1, 2, 3].forEach(i => {
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    allIndices.forEach(i => {
       if (this.hiddenAnswers.includes(i)) return;
       const col = document.createElement('div');
       col.className = 'audience-col';
@@ -347,7 +306,7 @@ const game = {
 
     const q = QUESTIONS[this.currentLevel];
     const correctText = q.answers[q.correct];
-    const correctLetter = ['A', 'B', 'C', 'D'][q.correct];
+    const correctLetter = ['A', 'B', 'C', 'D', 'E'][q.correct];
     const denom = Math.max(1, QUESTIONS.length - 1);
     const difficulty = this.currentLevel / denom;
 
@@ -375,6 +334,32 @@ const game = {
     const reply = pool[Math.floor(Math.random() * pool.length)];
     document.getElementById('phone-text').textContent = '"' + reply + '"';
     document.getElementById('modal-phone').classList.add('active');
+    playSound('lifeline');
+  },
+
+  useSarah() {
+    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
+    if (!this.lifelines.sarah) return;
+    if (this.state === STATE.SELECTING) this.cancelAnswer();
+
+    this.lifelines.sarah = false;
+    document.getElementById('ll-sarah').classList.add('used');
+
+    const q = QUESTIONS[this.currentLevel];
+    const correctText = q.answers[q.correct];
+    const correctLetter = ['A', 'B', 'C', 'D', 'E'][q.correct];
+
+    const sarahReplies = [
+      `The answer is ${correctLetter}: "${correctText}". This is straight from the syllabus, dear. Trust me.`,
+      `Of course, that's ${correctLetter} - "${correctText}". We covered this in class. The answer is certain.`,
+      `${correctLetter}: "${correctText}". I designed this course - I know the answer. Lock it in with confidence.`,
+      `Without a doubt, ${correctLetter}: "${correctText}". You should have remembered this from the readings!`,
+      `Definitively ${correctLetter}: "${correctText}". As your professor, I assure you this is correct.`
+    ];
+
+    const reply = sarahReplies[Math.floor(Math.random() * sarahReplies.length)];
+    document.getElementById('sarah-text').textContent = '"' + reply + '"';
+    document.getElementById('modal-sarah').classList.add('active');
     playSound('lifeline');
   },
 
@@ -432,35 +417,6 @@ const game = {
 };
 
 /* =====================================================================
-   WISDOM TOAST - Mystical quote overlay after each correct answer
-   ===================================================================== */
-function showWisdomToast() {
-  /* Pick a random unused quote */
-  if (wisdomUsed.length >= WISDOM_QUOTES.length) wisdomUsed = [];
-  let idx;
-  do {
-    idx = Math.floor(Math.random() * WISDOM_QUOTES.length);
-  } while (wisdomUsed.includes(idx));
-  wisdomUsed.push(idx);
-  const q = WISDOM_QUOTES[idx];
-
-  /* Create or reuse toast element */
-  let toast = document.getElementById('wisdom-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'wisdom-toast';
-    toast.innerHTML = '<div class="wisdom-text"></div><div class="wisdom-author"></div>';
-    document.body.appendChild(toast);
-  }
-  toast.querySelector('.wisdom-text').textContent = '"' + q.text + '"';
-  toast.querySelector('.wisdom-author').textContent = '— ' + q.author;
-  toast.classList.remove('show');
-  void toast.offsetWidth; /* force reflow */
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3800);
-}
-
-/* =====================================================================
    MOBILE: real viewport height (handles mobile browser address bar)
    ===================================================================== */
 function setRealVh() {
@@ -474,7 +430,7 @@ window.addEventListener('orientationchange', () => setTimeout(setRealVh, 200));
 document.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) {
     const id = e.target.id;
-    if (id === 'modal-audience' || id === 'modal-phone' || id === 'modal-clue') {
+    if (id === 'modal-audience' || id === 'modal-phone' || id === 'modal-clue' || id === 'modal-sarah') {
       e.target.classList.remove('active');
     }
   }
@@ -487,6 +443,7 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === '2' || e.key.toLowerCase() === 'b') game.selectAnswer(1);
     else if (e.key === '3' || e.key.toLowerCase() === 'c') game.selectAnswer(2);
     else if (e.key === '4' || e.key.toLowerCase() === 'd') game.selectAnswer(3);
+    else if (e.key === '5' || e.key.toLowerCase() === 'e') game.selectAnswer(4);
   } else if (game.state === STATE.SELECTING) {
     if (e.key === 'Enter') game.confirmAnswer();
     else if (e.key === 'Escape') game.cancelAnswer();
