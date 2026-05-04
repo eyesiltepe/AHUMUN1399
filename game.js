@@ -172,6 +172,61 @@ const game = {
     this.gameOver('walkaway');
   },
 
+  /* === END-SCREEN QUOTE POOLS ===
+     Drawn from the AHUM UN1399 readings — Attar, Rumi, Ibn 'Arabi, Ibn Tufayl,
+     the Qur'an, 1001 Nights, Ibn Khaldun, the Ikhwan al-Safa, and others.
+     Mix of profound, wry, and self-aware. Some are paraphrased for brevity. */
+  quotePools: {
+    won: [
+      { text: "When you reach the Simorgh, you find only your own reflection. So too with $1,000,000.", source: "After 'Attar, The Conference of the Birds" },
+      { text: "Knowledge has long roots and longer branches. Tonight, you have climbed both.", source: "After Tawaddud, 1001 Nights" },
+      { text: "Hayy ibn Yaqzan needed no teacher to discover the truth. You needed only fifteen rounds.", source: "After Ibn Tufayl" },
+      { text: "Out beyond ideas of right and wrong, there is a field. You won the prize there.", source: "After Rumi" },
+      { text: "The sweetest of stories is the one that ends well. The Qur'an said so.", source: "After Sura Yusuf 12:3" },
+      { text: "Be sure: with hardship comes ease. Also, sometimes, $1,000,000.", source: "After Sura 94:6" },
+      { text: "I am the Real, said al-Hallaj. They executed him. You won the money. Good trade.", source: "Wry note on al-Hallaj" },
+      { text: "Even the King of the Jinn would have ruled in your favor tonight.", source: "After the Ikhwan al-Safa" },
+    ],
+    walkaway: [
+      { text: "The donkey gave the ox advice on how to escape work. The donkey ended up doing the work himself. Walking away was wiser.", source: "After 1001 Nights, the Tale of the Ox" },
+      { text: "He who understands his limits, said the philosophers, is closer to wisdom than he who multiplies his gains.", source: "After al-Farabi, On the Perfect State" },
+      { text: "Civilizations fall when 'asabiyyah is lost to luxury. You quit before the luxury caught up to you.", source: "After Ibn Khaldun, Muqaddimah" },
+      { text: "The hoopoe led the birds across seven valleys. The nightingale stayed home with his rose. Both, in their way, were right.", source: "After 'Attar, Conference of the Birds" },
+      { text: "Patience is sweet, said Jacob. Especially when accompanied by a check.", source: "After Sura Yusuf 12:18" },
+      { text: "The wise traveler knows when to dismount the camel.", source: "Anonymous, in the spirit of adab" },
+      { text: "Murua: he who knows when to stop is most refined of all.", source: "After the glossary on muru'a" },
+      { text: "Shahrazad told a story for a thousand and one nights. You knew when to end yours.", source: "After 1001 Nights, Frame Tale" },
+    ],
+    lostNoMoney: [
+      { text: "The merchant threw date pits and killed the jinni's invisible son. Sometimes the wrong answer finds you first.", source: "After 1001 Nights, The Merchant and the Jinni" },
+      { text: "The nightingale could not leave his rose, the peacock could not forget paradise, the duck could not leave the pond. We all have our excuses.", source: "After 'Attar, Conference of the Birds" },
+      { text: "Joseph too was thrown into a well. Look how that turned out for him.", source: "After Sura Yusuf 12:15" },
+      { text: "Fana — the annihilation of the ego. Tonight, briefly, you achieved it.", source: "After the Sufi glossary on fana'" },
+      { text: "Ibn Khaldun observed that all dynasties decline. Yours simply did so faster than most.", source: "After Ibn Khaldun" },
+      { text: "The Ikhwan al-Safa argued that humans have no inherent claim over animals. Tonight, the animals win.", source: "After The Case of the Animals versus Man" },
+      { text: "The donkey advised the ox to refuse food and pretend to be sick. The donkey ended up doing the ox's work. Wisdom is hard.", source: "After 1001 Nights" },
+      { text: "Dunyazad said: Sister, tell us a tale. The story you told tonight was short.", source: "After 1001 Nights" },
+      { text: "Hayy ibn Yaqzan deduced God's existence from first principles, alone, on an island. You had multiple choice and still struggled. Be kind to yourself.", source: "After Ibn Tufayl" },
+    ],
+    lostWithMoney: [
+      { text: "Even Joseph, master of dreams, sat in prison for years before his rise. Your prize is your foothold.", source: "After Sura Yusuf 12:42" },
+      { text: "The wise teacher al-Farabi said: a partial good is still a good. Take what you have won.", source: "After al-Farabi" },
+      { text: "The Simorgh waits behind Mount Qaf. You did not cross all seven valleys, but you crossed several.", source: "After 'Attar, Conference of the Birds" },
+      { text: "Patience, said Jacob, is sweet. So is your guaranteed prize.", source: "After Sura Yusuf 12:18" },
+      { text: "Ibn 'Arabi taught that every veil lifted reveals another. You lifted some tonight.", source: "After Ibn 'Arabi, Tarjuman al-Ashwaq" },
+      { text: "The path of murua'a is difficult. So too is trivia. You walked both with honor.", source: "After the glossary on muru'a" },
+      { text: "Shahrazad would not have made it 1,001 nights without a few cliffhangers. Yours just came early.", source: "After 1001 Nights" },
+    ]
+  },
+
+  pickQuote(reason, amount) {
+    let pool;
+    if (reason === 'won') pool = this.quotePools.won;
+    else if (reason === 'walkaway') pool = this.quotePools.walkaway;
+    else pool = amount > 0 ? this.quotePools.lostWithMoney : this.quotePools.lostNoMoney;
+    return pool[Math.floor(Math.random() * pool.length)];
+  },
+
   gameOver(reason) {
     this.state = STATE.ENDED;
     setTimeout(() => {
@@ -181,6 +236,8 @@ const game = {
       const prizeEl = document.getElementById('end-prize');
       const msgEl = document.getElementById('end-message');
       const iconEl = document.getElementById('end-icon');
+      const quoteEl = document.getElementById('end-quote');
+      const sourceEl = document.getElementById('end-quote-source');
 
       let amount, title, message, icon;
       if (reason === 'won') {
@@ -210,6 +267,13 @@ const game = {
       prizeEl.textContent = formatMoney(amount);
       msgEl.textContent = message;
       iconEl.textContent = icon;
+
+      // Display random quote
+      if (quoteEl && sourceEl) {
+        const quote = this.pickQuote(reason, amount);
+        quoteEl.textContent = '"' + quote.text + '"';
+        sourceEl.textContent = '— ' + quote.source;
+      }
     }, 800);
   },
 
@@ -296,6 +360,103 @@ const game = {
     }, 100);
   },
 
+  /* === CLASSMATES POOL ===
+     Real students from AHUM UN1399 (Spring 2026). Each has a distinct
+     personality that flavors how they answer the phone. They always know
+     the correct answer (they took the same readings!) but their delivery
+     differs - some confident, some hesitant, some funny. */
+  classmates: [
+    { name: "Shehar Bano", style: "thoughtful", tip: "She always reads the footnotes" },
+    { name: "Juliana Bryant", style: "confident", tip: "She never misses a class" },
+    { name: "Ines Caldara", style: "scholarly", tip: "She memorizes glossaries for fun" },
+    { name: "Ibrahim Ibrahim", style: "casual", tip: "He has a sixth sense for these" },
+    { name: "Michael Ishak", style: "analytical", tip: "He cross-references every answer" },
+    { name: "Shunammite Jiwanmall", style: "warm", tip: "She loves the Sufi readings most" },
+    { name: "Nafeesa Mahmood", style: "precise", tip: "She color-codes her notes" },
+    { name: "Pranav Manoj", style: "philosophical", tip: "He wrote a paper on Ibn Tufayl" },
+    { name: "Lucy Markow", style: "witty", tip: "She has the syllabus memorized" },
+    { name: "Jason McCord", style: "humble", tip: "He second-guesses, but he's usually right" },
+    { name: "Narges Noorbakhsh", style: "poetic", tip: "She quotes Rumi in everyday conversation" },
+    { name: "Lynsey Overturf", style: "decisive", tip: "She doesn't hesitate" },
+    { name: "Andrea Riccelli", style: "dramatic", tip: "He treats every answer like a final argument" },
+    { name: "Yuval Shemla", style: "calm", tip: "Nothing rattles him" },
+    { name: "Luke Suess", style: "energetic", tip: "He always sounds excited to help" },
+    { name: "Nina Wang", style: "meticulous", tip: "She probably has a flashcard for this" }
+  ],
+
+  buildPhoneReply(classmate, correctLetter, correctText) {
+    // Templates per personality style; each returns a confident-correct answer
+    // because every classmate took the readings (this is a 'real friend' bonus!).
+    const templates = {
+      thoughtful: [
+        `Hmm, let me think... yes, it's ${correctLetter}: "${correctText}". I remember this from the reading.`,
+        `Give me a sec... okay, the answer is ${correctLetter}, "${correctText}". I'm pretty sure.`
+      ],
+      confident: [
+        `That's ${correctLetter}: "${correctText}". Easy. Lock it in.`,
+        `${correctLetter}, "${correctText}". 100%. Move on.`
+      ],
+      scholarly: [
+        `According to the glossary, the answer is ${correctLetter}: "${correctText}". Definitely.`,
+        `Based on the readings, it's ${correctLetter}, "${correctText}". I have notes on this.`
+      ],
+      casual: [
+        `Oh, that one? Yeah it's ${correctLetter}, "${correctText}". No worries.`,
+        `Bro, it's ${correctLetter}: "${correctText}". You got this.`
+      ],
+      analytical: [
+        `Cross-referencing the source... the answer is ${correctLetter}: "${correctText}".`,
+        `Logically the answer is ${correctLetter}, "${correctText}". The other options don't hold up.`
+      ],
+      warm: [
+        `Oh sweetie, the answer is ${correctLetter}: "${correctText}". You've got this!`,
+        `Don't worry, it's ${correctLetter}, "${correctText}". I believe in you!`
+      ],
+      precise: [
+        `The answer is ${correctLetter}: "${correctText}". I have it underlined in my notes.`,
+        `Exactly ${correctLetter}, "${correctText}". Page reference and everything.`
+      ],
+      philosophical: [
+        `Ah, this question reaches the essence of the matter. The answer is ${correctLetter}: "${correctText}".`,
+        `In the spirit of the text itself, ${correctLetter}, "${correctText}", is the truth.`
+      ],
+      witty: [
+        `Oh, did Sarah Bin Tyeer write this one? It's ${correctLetter}: "${correctText}". Obviously.`,
+        `${correctLetter}, "${correctText}". I'd bet my participation grade on it.`
+      ],
+      humble: [
+        `I think... I mean I'm pretty sure... it's ${correctLetter}: "${correctText}". Yeah, go with that.`,
+        `Don't quote me, but I'm fairly confident it's ${correctLetter}, "${correctText}".`
+      ],
+      poetic: [
+        `As the Persian masters would say - the answer is ${correctLetter}: "${correctText}".`,
+        `${correctLetter}, "${correctText}". Like a hoopoe, the answer flies straight to me.`
+      ],
+      decisive: [
+        `${correctLetter}: "${correctText}". Done. Next question.`,
+        `It's ${correctLetter}, "${correctText}". Don't overthink it.`
+      ],
+      dramatic: [
+        `Ladies and gentlemen of the jury - the answer is ${correctLetter}: "${correctText}"!`,
+        `Without a shadow of a doubt: ${correctLetter}, "${correctText}". I rest my case.`
+      ],
+      calm: [
+        `Yes, the answer is ${correctLetter}: "${correctText}". Take a breath. You're fine.`,
+        `${correctLetter}, "${correctText}". Stay calm, lock it in.`
+      ],
+      energetic: [
+        `OH I KNOW THIS ONE!! It's ${correctLetter}: "${correctText}"!!! Go go go!`,
+        `Yes! ${correctLetter}, "${correctText}"! I just covered this in my study group!`
+      ],
+      meticulous: [
+        `Hold on, checking my flashcards... yes, ${correctLetter}: "${correctText}". Confirmed.`,
+        `Per my notes from week three, the answer is ${correctLetter}, "${correctText}".`
+      ]
+    };
+    const pool = templates[classmate.style] || templates.confident;
+    return pool[Math.floor(Math.random() * pool.length)];
+  },
+
   usePhone() {
     if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
     if (!this.lifelines.phone) return;
@@ -307,32 +468,17 @@ const game = {
     const q = QUESTIONS[this.currentLevel];
     const correctText = q.answers[q.correct];
     const correctLetter = ['A', 'B', 'C', 'D', 'E'][q.correct];
-    const denom = Math.max(1, QUESTIONS.length - 1);
-    const difficulty = this.currentLevel / denom;
 
-    const confidentReplies = [
-      `I know this one. The answer is definitely ${correctLetter}: "${correctText}". Lock it in.`,
-      `Easy! The answer is ${correctLetter}, which is "${correctText}". I know this topic well.`,
-      `I'm sure of it. The answer is ${correctLetter}: "${correctText}". Go with that.`
-    ];
-    const mediumReplies = [
-      `Hmm, I think the answer is ${correctLetter}, "${correctText}", but I'm not 100% sure.`,
-      `${correctLetter}, "${correctText}", feels right to me. At least, that's what makes the most sense.`,
-      `Looking at the options, I'd say ${correctLetter}: "${correctText}". But the call is yours.`
-    ];
-    const uncertainReplies = [
-      `This is a tough one. I'd guess ${correctLetter} ("${correctText}"), but it's risky.`,
-      `Really hard. I think it might be ${correctLetter}, "${correctText}", but honestly I'm not sure.`,
-      `I don't really know, but my best guess is ${correctLetter}: "${correctText}". Up to you to decide.`
-    ];
+    // Pick a random classmate
+    const classmate = this.classmates[Math.floor(Math.random() * this.classmates.length)];
+    const reply = this.buildPhoneReply(classmate, correctLetter, correctText);
 
-    let pool;
-    if (difficulty < 0.35) pool = confidentReplies;
-    else if (difficulty < 0.7) pool = mediumReplies;
-    else pool = uncertainReplies;
-
-    const reply = pool[Math.floor(Math.random() * pool.length)];
-    document.getElementById('phone-text').textContent = '"' + reply + '"';
+    // Compose the modal: who's calling + their reply + the tip
+    const phoneEl = document.getElementById('phone-text');
+    phoneEl.innerHTML =
+      `<div class="phone-caller">📞 Calling ${classmate.name}...</div>` +
+      `<div class="phone-reply">"${reply}"</div>` +
+      `<div class="phone-tip">💡 Tip: ${classmate.tip}</div>`;
     document.getElementById('modal-phone').classList.add('active');
     playSound('lifeline');
   },

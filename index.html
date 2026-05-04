@@ -20,7 +20,6 @@
     <div class="welcome-course">Colloquium on Major Texts</div>
     <div class="welcome-assignment">Creative Assignment</div>
   </div>
-  <div class="welcome-subtitle">201 questions · 4 lifelines · $1,000,000 prize</div>
   <button class="btn" onclick="game.start()">START GAME</button>
 </div>
 
@@ -56,6 +55,10 @@
   <h2 id="end-title"></h2>
   <div class="prize-display" id="end-prize"></div>
   <p id="end-message"></p>
+  <div class="end-quote-block">
+    <p id="end-quote" class="end-quote"></p>
+    <p id="end-quote-source" class="end-quote-source"></p>
+  </div>
   <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
 </div>
 
@@ -94,7 +97,7 @@
 <div class="modal-overlay" id="modal-phone">
   <div class="modal">
     <h3>📞 Your Friend on the Phone</h3>
-    <p id="phone-text" style="font-style: italic; font-size: 1.05rem; line-height: 1.6; color: var(--gold-light); margin: 22px 0;"></p>
+    <div id="phone-text" class="phone-block"></div>
     <button class="btn" onclick="game.closeModal('modal-phone')">CONTINUE</button>
   </div>
 </div>
