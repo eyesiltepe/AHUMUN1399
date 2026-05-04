@@ -20,7 +20,7 @@
     <div class="welcome-course">Colloquium on Major Texts</div>
     <div class="welcome-assignment">Creative Assignment</div>
   </div>
-  <div class="welcome-subtitle">201 questions · 3 lifelines · $1,000,000 prize</div>
+  <div class="welcome-subtitle">201 questions · 4 lifelines · $1,000,000 prize</div>
   <button class="btn" onclick="game.start()">START GAME</button>
 </div>
 
@@ -31,9 +31,10 @@
       <div class="top-bar">
         <span class="counter" id="counter">Question 1 / 15</span>
         <div class="lifelines">
-          <div class="lifeline" id="ll-fifty" onclick="game.useFiftyFifty()" title="50:50 - Removes two wrong answers">50:50</div>
+          <div class="lifeline" id="ll-fifty" onclick="game.useFiftyFifty()" title="50:50 - Removes wrong answers">50:50</div>
           <div class="lifeline" id="ll-audience" onclick="game.useAudience()" title="Ask the audience">👥</div>
           <div class="lifeline" id="ll-phone" onclick="game.usePhone()" title="Phone a friend">📞</div>
+          <div class="lifeline lifeline-sarah" id="ll-sarah" onclick="game.useSarah()" title="Ask Prof. Sarah Bin Tyeer - always correct!">🎓</div>
         </div>
         <button class="sound-toggle" id="sound-toggle" onclick="game.toggleSound()" title="Sound">🔊</button>
       </div>
@@ -95,6 +96,14 @@
     <h3>📞 Your Friend on the Phone</h3>
     <p id="phone-text" style="font-style: italic; font-size: 1.05rem; line-height: 1.6; color: var(--gold-light); margin: 22px 0;"></p>
     <button class="btn" onclick="game.closeModal('modal-phone')">CONTINUE</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-sarah">
+  <div class="modal">
+    <h3>🎓 Prof. Sarah Bin Tyeer Says</h3>
+    <p id="sarah-text" style="font-style: italic; font-size: 1.05rem; line-height: 1.6; color: var(--gold-light); margin: 22px 0;"></p>
+    <button class="btn" onclick="game.closeModal('modal-sarah')">CONTINUE</button>
   </div>
 </div>
 

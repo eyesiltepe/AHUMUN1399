@@ -18,7 +18,7 @@ const game = {
   currentLevel: 0,
   selectedAnswer: null,
   state: STATE.IDLE,
-  lifelines: { fifty: true, audience: true, phone: true, switch: true, clue: true },
+  lifelines: { fifty: true, audience: true, phone: true, sarah: true, switch: true, clue: true },
   hiddenAnswers: [],
   soundOn: true,
 
@@ -77,7 +77,7 @@ const game = {
     }
     const answersDiv = document.getElementById('answers');
     answersDiv.innerHTML = '';
-    const letters = ['A', 'B', 'C', 'D'];
+    const letters = ['A', 'B', 'C', 'D', 'E'];
     q.answers.forEach((answer, i) => {
       const el = document.createElement('div');
       el.className = 'answer';
@@ -98,7 +98,7 @@ const game = {
     document.querySelectorAll('.answer').forEach(a => a.classList.remove('selected'));
     document.querySelectorAll('.answer')[index].classList.add('selected');
     document.getElementById('confirm-text').textContent =
-      ['A', 'B', 'C', 'D'][index] + ': ' + QUESTIONS[this.currentLevel].answers[index];
+      ['A', 'B', 'C', 'D', 'E'][index] + ': ' + QUESTIONS[this.currentLevel].answers[index];
     document.getElementById('modal-confirm').classList.add('active');
     playSound('select');
   },
@@ -220,7 +220,9 @@ const game = {
     if (this.state === STATE.SELECTING) this.cancelAnswer();
 
     const correctIndex = QUESTIONS[this.currentLevel].correct;
-    const wrongIndices = [0, 1, 2, 3].filter(
+    const numAnswers = QUESTIONS[this.currentLevel].answers.length;
+    const allIndices = Array.from({ length: numAnswers }, (_, i) => i);
+    const wrongIndices = allIndices.filter(
       i => i !== correctIndex && !this.hiddenAnswers.includes(i)
     );
     if (wrongIndices.length === 0) return;
@@ -228,8 +230,10 @@ const game = {
     this.lifelines.fifty = false;
     document.getElementById('ll-fifty').classList.add('used');
     shuffle(wrongIndices);
-    const take = Math.min(2, wrongIndices.length);
-    const toHide = wrongIndices.slice(0, take);
+    // Hide enough wrong answers to leave 2 visible (the correct one + 1 wrong)
+    const visibleCount = numAnswers - this.hiddenAnswers.length;
+    const toHideCount = Math.max(0, visibleCount - 2);
+    const toHide = wrongIndices.slice(0, toHideCount);
     this.hiddenAnswers = [...new Set([...this.hiddenAnswers, ...toHide])];
     const answers = document.querySelectorAll('.answer');
     toHide.forEach(i => answers[i].classList.add('hidden'));
@@ -245,7 +249,9 @@ const game = {
     document.getElementById('ll-audience').classList.add('used');
 
     const correctIndex = QUESTIONS[this.currentLevel].correct;
-    const visibleIndices = [0, 1, 2, 3].filter(i => !this.hiddenAnswers.includes(i));
+    const numAnswers = QUESTIONS[this.currentLevel].answers.length;
+    const allIndices = Array.from({ length: numAnswers }, (_, i) => i);
+    const visibleIndices = allIndices.filter(i => !this.hiddenAnswers.includes(i));
 
     const denom = Math.max(1, QUESTIONS.length - 1);
     const difficulty = Math.min(this.currentLevel / denom, 1);
@@ -253,7 +259,7 @@ const game = {
     correctPct = Math.max(40, Math.min(85, Math.round(correctPct)));
     if (visibleIndices.length === 2) correctPct = Math.max(60, correctPct);
 
-    const percentages = [0, 0, 0, 0];
+    const percentages = new Array(numAnswers).fill(0);
     percentages[correctIndex] = correctPct;
     let remaining = 100 - correctPct;
     const otherVisible = visibleIndices.filter(i => i !== correctIndex);
@@ -269,8 +275,8 @@ const game = {
 
     const barsDiv = document.getElementById('audience-bars');
     barsDiv.innerHTML = '';
-    const letters = ['A', 'B', 'C', 'D'];
-    [0, 1, 2, 3].forEach(i => {
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    allIndices.forEach(i => {
       if (this.hiddenAnswers.includes(i)) return;
       const col = document.createElement('div');
       col.className = 'audience-col';
@@ -300,7 +306,7 @@ const game = {
 
     const q = QUESTIONS[this.currentLevel];
     const correctText = q.answers[q.correct];
-    const correctLetter = ['A', 'B', 'C', 'D'][q.correct];
+    const correctLetter = ['A', 'B', 'C', 'D', 'E'][q.correct];
     const denom = Math.max(1, QUESTIONS.length - 1);
     const difficulty = this.currentLevel / denom;
 
@@ -328,6 +334,32 @@ const game = {
     const reply = pool[Math.floor(Math.random() * pool.length)];
     document.getElementById('phone-text').textContent = '"' + reply + '"';
     document.getElementById('modal-phone').classList.add('active');
+    playSound('lifeline');
+  },
+
+  useSarah() {
+    if (this.state !== STATE.IDLE && this.state !== STATE.SELECTING) return;
+    if (!this.lifelines.sarah) return;
+    if (this.state === STATE.SELECTING) this.cancelAnswer();
+
+    this.lifelines.sarah = false;
+    document.getElementById('ll-sarah').classList.add('used');
+
+    const q = QUESTIONS[this.currentLevel];
+    const correctText = q.answers[q.correct];
+    const correctLetter = ['A', 'B', 'C', 'D', 'E'][q.correct];
+
+    const sarahReplies = [
+      `The answer is ${correctLetter}: "${correctText}". This is straight from the syllabus, dear. Trust me.`,
+      `Of course, that's ${correctLetter} - "${correctText}". We covered this in class. The answer is certain.`,
+      `${correctLetter}: "${correctText}". I designed this course - I know the answer. Lock it in with confidence.`,
+      `Without a doubt, ${correctLetter}: "${correctText}". You should have remembered this from the readings!`,
+      `Definitively ${correctLetter}: "${correctText}". As your professor, I assure you this is correct.`
+    ];
+
+    const reply = sarahReplies[Math.floor(Math.random() * sarahReplies.length)];
+    document.getElementById('sarah-text').textContent = '"' + reply + '"';
+    document.getElementById('modal-sarah').classList.add('active');
     playSound('lifeline');
   },
 
@@ -398,7 +430,7 @@ window.addEventListener('orientationchange', () => setTimeout(setRealVh, 200));
 document.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal-overlay')) {
     const id = e.target.id;
-    if (id === 'modal-audience' || id === 'modal-phone' || id === 'modal-clue') {
+    if (id === 'modal-audience' || id === 'modal-phone' || id === 'modal-clue' || id === 'modal-sarah') {
       e.target.classList.remove('active');
     }
   }
@@ -411,6 +443,7 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === '2' || e.key.toLowerCase() === 'b') game.selectAnswer(1);
     else if (e.key === '3' || e.key.toLowerCase() === 'c') game.selectAnswer(2);
     else if (e.key === '4' || e.key.toLowerCase() === 'd') game.selectAnswer(3);
+    else if (e.key === '5' || e.key.toLowerCase() === 'e') game.selectAnswer(4);
   } else if (game.state === STATE.SELECTING) {
     if (e.key === 'Enter') game.confirmAnswer();
     else if (e.key === 'Escape') game.cancelAnswer();

@@ -155,10 +155,10 @@ body::before {
   inset: 0;
   background-image: url('columbia-logo.png');
   background-repeat: no-repeat;
-  background-position: center 42%;
-  background-size: clamp(420px, 75vw, 780px) auto;
-  filter: invert(1) brightness(1.4) sepia(0.3) hue-rotate(15deg) saturate(2);
-  opacity: 0.10;
+  background-position: center 48%;
+  background-size: clamp(700px, 130vw, 1400px) auto;
+  filter: invert(1) brightness(1.5) sepia(0.4) hue-rotate(15deg) saturate(2.2);
+  opacity: 0.16;
   pointer-events: none;
   z-index: 0;
   mix-blend-mode: screen;
@@ -520,6 +520,16 @@ body::before {
 }
 .lifeline-clue {
   border-color: rgba(244, 114, 182, 0.75);
+}
+.lifeline-sarah {
+  border-color: var(--gold);
+  background: radial-gradient(circle at 35% 30%, rgba(250, 204, 21, 0.35), rgba(161, 98, 7, 0.4) 65%, var(--bg-deep) 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 16px rgba(250, 204, 21, 0.35);
+  animation: sarah-pulse 2.4s ease-in-out infinite;
+}
+@keyframes sarah-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 16px rgba(250, 204, 21, 0.35); }
+  50%      { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 28px rgba(250, 204, 21, 0.65); }
 }
 .lifeline:hover:not(.used):not(.locked) {
   transform: scale(1.12) translateY(-3px);
