@@ -63,6 +63,9 @@ const game = {
     document.getElementById('counter').textContent = `Round ${this.currentLevel + 1} / ${QUESTIONS.length}`;
     document.getElementById('walk-away-btn').disabled = false;
 
+    // Stop any speech still going from a previous question
+    stopSpeaking();
+
     const q = QUESTIONS[this.currentLevel];
     document.getElementById('question-box').textContent = q.question;
     const srcEl = document.getElementById('question-source');
@@ -87,6 +90,28 @@ const game = {
       answersDiv.appendChild(el);
     });
     playSound('next');
+
+    // Question 2 is always a poem. Read the poem aloud with a contemplative
+    // voice. The poem sits between blank lines in q.question; we extract the
+    // longest such block, strip line/em-dash breaks, and feed it to TTS.
+    if (this.currentLevel === 1) {
+      const blocks = q.question.split(/\n\s*\n/);
+      // Pick the block that looks most like a poem - one with line breaks
+      let poemBlock = blocks
+        .filter(b => b.includes('\n'))
+        .sort((a, b) => b.length - a.length)[0];
+      if (!poemBlock) poemBlock = blocks.sort((a, b) => b.length - a.length)[0] || q.question;
+      // Clean for speech: remove leading quotes/spaces, collapse whitespace,
+      // turn slashes (line breaks within a verse) into pauses, dedupe punctuation
+      const toRead = poemBlock
+        .replace(/^[\s'"]+|[\s'"]+$/g, '')
+        .replace(/\s*\/\s*/g, ', ')
+        .replace(/\s+/g, ' ')
+        .replace(/,\s*,/g, ',')
+        .replace(/\.\s*,/g, '.')
+        .trim();
+      setTimeout(() => speakPoem(toRead), 700);
+    }
   },
 
   selectAnswer(index) {
@@ -735,7 +760,10 @@ const game = {
   toggleSound() {
     this.soundOn = !this.soundOn;
     document.getElementById('sound-toggle').textContent = this.soundOn ? '🔊' : '🔇';
-    if (!this.soundOn) stopThinking();
+    if (!this.soundOn) {
+      stopThinking();
+      stopSpeaking();
+    }
   }
 };
 
