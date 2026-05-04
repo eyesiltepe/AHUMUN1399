@@ -400,29 +400,51 @@ function buildQuestionSet() {
   //   Q2 = poem (with text-to-speech reading)
   //   Q3 or Q4 = hikaya (a story/parable - Sheikh San'an weighted heaviest)
   // Then fill the remaining 12 slots from easy / medium / hard tiers.
+  //
+  // Defensive: every tier-pick wraps with safeTier() so a missing tier
+  // (e.g., if questions.js was deployed before the tier was added) does
+  // not crash the whole game - we just fill from another tier instead.
 
-  const glossary = pickN(QUESTION_POOL.glossary, 1);
-  const poem = pickN(QUESTION_POOL.poem, 1);
+  const glossary = pickN(safeTier('glossary', 'medium'), 1);
+  const poem = pickN(safeTier('poem', 'medium'), 1);
   const hikaya = pickHikayaWeighted();
-  const easy = pickN(QUESTION_POOL.easy, 3);
-  const medium = pickN(QUESTION_POOL.medium, 5);
-  const hard = pickN(QUESTION_POOL.hard, 4);
+  const easy = pickN(safeTier('easy', 'medium'), 3);
+  const medium = pickN(safeTier('medium', 'easy'), 5);
+  const hard = pickN(safeTier('hard', 'medium'), 4);
 
   // Place hikaya randomly at position 2 (Q3) or 3 (Q4) of the array.
   const tail = [...easy, ...medium, ...hard];   // 12 questions
-  const hikayaSlotInTail = Math.random() < 0.5 ? 0 : 1;  // becomes Q3 or Q4
-  tail.splice(hikayaSlotInTail, 0, hikaya);     // tail is now 13 long
+  if (hikaya) {
+    const hikayaSlotInTail = Math.random() < 0.5 ? 0 : 1;
+    tail.splice(hikayaSlotInTail, 0, hikaya);   // tail is now 13 long
+  }
   QUESTIONS = [...glossary, ...poem, ...tail];
+}
+
+/**
+ * Return a non-empty tier from QUESTION_POOL. If `name` is missing or empty,
+ * fall back to `fallback`. If both are missing, returns the first non-empty
+ * tier we can find, so the game NEVER ends up with an empty question set.
+ */
+function safeTier(name, fallback) {
+  if (QUESTION_POOL[name] && QUESTION_POOL[name].length) return QUESTION_POOL[name];
+  if (QUESTION_POOL[fallback] && QUESTION_POOL[fallback].length) return QUESTION_POOL[fallback];
+  for (const k of Object.keys(QUESTION_POOL)) {
+    if (QUESTION_POOL[k] && QUESTION_POOL[k].length) return QUESTION_POOL[k];
+  }
+  return [];
 }
 
 /**
  * Pick a hikaya question, with the Sheikh San'an stories weighted ~3x more
  * likely than any individual non-San'an story. The first 7 entries in the
  * hikaya tier are San'an stories; the rest are other parables.
+ * Returns null if no hikaya tier exists (caller will skip the slot).
  */
 function pickHikayaWeighted() {
-  const SAN_AN_COUNT = 7;
   const all = QUESTION_POOL.hikaya;
+  if (!all || all.length === 0) return null;
+  const SAN_AN_COUNT = Math.min(7, all.length);
   const san_an = all.slice(0, SAN_AN_COUNT);
   const others = all.slice(SAN_AN_COUNT);
   // 60% chance to draw a San'an story, 40% chance any other
@@ -431,6 +453,7 @@ function pickHikayaWeighted() {
 }
 
 function pickN(arr, n) {
+  if (!arr || arr.length === 0) return [];
   const copy = arr.slice();
   shuffle(copy);
   return copy.slice(0, n);

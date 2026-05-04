@@ -26,13 +26,56 @@ const game = {
    * @param {'classic'|'study'} mode - classic = 15 (5 easy / 5 medium / 5 hard). study = entire bank shuffled.
    */
   start(mode = 'classic') {
-    buildQuestionSet(mode);
+    // Try the proper builder; if it throws or yields nothing, fall back to a
+    // simple build that just shuffles whatever tiers exist. This guarantees
+    // the game NEVER ends up with an empty question set, regardless of which
+    // version of questions.js is deployed.
+    try {
+      buildQuestionSet(mode);
+    } catch (e) {
+      console.warn('buildQuestionSet threw, using fallback:', e);
+      QUESTIONS = [];
+    }
+    if (!Array.isArray(QUESTIONS) || QUESTIONS.length === 0) {
+      this.fallbackBuildQuestions();
+    }
     initAudio();
     playSound('start');
     document.getElementById('welcome').classList.remove('active');
     document.getElementById('game').classList.add('active');
     this.renderLadder();
     this.loadQuestion();
+  },
+
+  /**
+   * Last-resort question-set builder. Works with any version of questions.js
+   * by reading whatever tiers exist on QUESTION_POOL and shuffling 15 from them.
+   * Prioritizes glossary -> poem -> hikaya -> easy -> medium -> hard if present.
+   */
+  fallbackBuildQuestions() {
+    if (typeof QUESTION_POOL === 'undefined') {
+      console.error('QUESTION_POOL is not defined - questions.js failed to load');
+      QUESTIONS = [];
+      return;
+    }
+    const order = ['glossary', 'poem', 'hikaya', 'easy', 'medium', 'hard'];
+    // Collect everything available, in tier order
+    const all = [];
+    for (const k of order) {
+      if (Array.isArray(QUESTION_POOL[k])) all.push(...QUESTION_POOL[k]);
+    }
+    // Plus any tiers I forgot to list
+    for (const k of Object.keys(QUESTION_POOL)) {
+      if (!order.includes(k) && Array.isArray(QUESTION_POOL[k])) {
+        all.push(...QUESTION_POOL[k]);
+      }
+    }
+    // Shuffle and take 15
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    QUESTIONS = all.slice(0, 15);
   },
 
   renderLadder() {
@@ -67,6 +110,15 @@ const game = {
     stopSpeaking();
 
     const q = QUESTIONS[this.currentLevel];
+    if (!q || !q.question || !Array.isArray(q.answers)) {
+      // This should never happen, but make it visible if it does
+      document.getElementById('question-box').textContent =
+        '⚠️ Question failed to load. Please reload the page (Cmd+Shift+R). ' +
+        'If this persists, questions.js may be out of date on the server.';
+      document.getElementById('answers').innerHTML = '';
+      console.error('Missing or malformed question at index', this.currentLevel, q);
+      return;
+    }
     document.getElementById('question-box').textContent = q.question;
     const srcEl = document.getElementById('question-source');
     if (srcEl) {
