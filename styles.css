@@ -146,6 +146,34 @@ body::before {
   min-height: calc(var(--vh, 1vh) * 100);
   text-align: center;
   padding: 72px 20px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.welcome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('columbia-logo.png');
+  background-repeat: no-repeat;
+  background-position: center 42%;
+  background-size: clamp(420px, 75vw, 780px) auto;
+  filter: invert(1) brightness(1.4) sepia(0.3) hue-rotate(15deg) saturate(2);
+  opacity: 0.10;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+.welcome::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(2, 6, 23, 0.55) 70%, rgba(2, 6, 23, 0.85) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+.welcome > * {
+  position: relative;
+  z-index: 2;
 }
 .welcome-logo {
   font-family: var(--font-display);
