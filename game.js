@@ -107,7 +107,7 @@ const game = {
     document.getElementById('walk-away-btn').disabled = false;
 
     // Stop any speech still going from a previous question
-    stopSpeaking();
+    if (typeof stopSpeaking === 'function') stopSpeaking();
 
     const q = QUESTIONS[this.currentLevel];
     if (!q || !q.question || !Array.isArray(q.answers)) {
@@ -162,7 +162,9 @@ const game = {
         .replace(/,\s*,/g, ',')
         .replace(/\.\s*,/g, '.')
         .trim();
-      setTimeout(() => speakPoem(toRead), 700);
+      if (typeof speakPoem === 'function') {
+        setTimeout(() => speakPoem(toRead), 700);
+      }
     }
   },
 
@@ -738,8 +740,8 @@ const game = {
     this.soundOn = !this.soundOn;
     document.getElementById('sound-toggle').textContent = this.soundOn ? '🔊' : '🔇';
     if (!this.soundOn) {
-      stopThinking();
-      stopSpeaking();
+      if (typeof stopThinking === 'function') stopThinking();
+      if (typeof stopSpeaking === 'function') stopSpeaking();
     }
   }
 };
