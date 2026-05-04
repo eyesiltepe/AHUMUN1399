@@ -361,26 +361,26 @@ const game = {
   },
 
   /* === CLASSMATES POOL ===
-     Real students from AHUM UN1399 (Spring 2026). Each has a distinct
-     "specialty" or quirk that flavors how they hint at the answer.
-     They never give the answer directly - they steer you toward it. */
+     Real students from AHUM UN1399 (Spring 2026). The 'style' field is
+     used internally to flavor each classmate's hint phrasing, but is
+     never shown to the player - they just see names. */
   classmates: [
-    { name: "Shehar Bano", quirk: "footnote nerd", style: "thoughtful" },
-    { name: "Juliana Bryant", quirk: "perfect attendance", style: "confident" },
-    { name: "Ines Caldara", quirk: "glossary obsessive", style: "scholarly" },
-    { name: "Ibrahim Ibrahim", quirk: "vibes-based reasoning", style: "casual" },
-    { name: "Michael Ishak", quirk: "logic puzzle solver", style: "analytical" },
-    { name: "Shunammite Jiwanmall", quirk: "Sufi enthusiast", style: "warm" },
-    { name: "Nafeesa Mahmood", quirk: "color-coded notes", style: "precise" },
-    { name: "Pranav Manoj", quirk: "wrote his paper on Ibn Tufayl", style: "philosophical" },
-    { name: "Lucy Markow", quirk: "syllabus memorized", style: "witty" },
-    { name: "Jason McCord", quirk: "second-guesser, usually right", style: "humble" },
-    { name: "Narges Noorbakhsh", quirk: "quotes Rumi at brunch", style: "poetic" },
-    { name: "Lynsey Overturf", quirk: "no-nonsense", style: "decisive" },
-    { name: "Andrea Riccelli", quirk: "law school energy", style: "dramatic" },
-    { name: "Yuval Shemla", quirk: "calm under pressure", style: "calm" },
-    { name: "Luke Suess", quirk: "human exclamation point", style: "energetic" },
-    { name: "Nina Wang", quirk: "flashcard queen", style: "meticulous" }
+    { name: "Shehar Bano", style: "thoughtful" },
+    { name: "Juliana Bryant", style: "confident" },
+    { name: "Ines Caldara", style: "scholarly" },
+    { name: "Ibrahim Ibrahim", style: "casual" },
+    { name: "Michael Ishak", style: "analytical" },
+    { name: "Shunammite Jiwanmall", style: "warm" },
+    { name: "Nafeesa Mahmood", style: "precise" },
+    { name: "Pranav Manoj", style: "philosophical" },
+    { name: "Lucy Markow", style: "witty" },
+    { name: "Jason McCord", style: "humble" },
+    { name: "Narges Noorbakhsh", style: "poetic" },
+    { name: "Lynsey Overturf", style: "decisive" },
+    { name: "Andrea Riccelli", style: "dramatic" },
+    { name: "Yuval Shemla", style: "calm" },
+    { name: "Luke Suess", style: "energetic" },
+    { name: "Nina Wang", style: "meticulous" }
   ],
 
   /* Stash for the multi-step phone lifeline */
@@ -610,14 +610,13 @@ const game = {
     const candidates = pool.slice(0, 3);
     this.phonePending = candidates;
 
-    // Render the picker modal
+    // Render the picker modal - clean, just names
     const pickerEl = document.getElementById('phone-picker');
     pickerEl.innerHTML =
-      `<div class="phone-picker-prompt">Three of your classmates are available. Who do you want to call?</div>` +
+      `<div class="phone-picker-prompt">Choose someone to call:</div>` +
       candidates.map((c, i) =>
         `<button class="phone-candidate" onclick="game.callClassmate(${i})">` +
           `<div class="phone-candidate-name">${c.name}</div>` +
-          `<div class="phone-candidate-quirk">${c.quirk}</div>` +
         `</button>`
       ).join('');
     document.getElementById('modal-phone-picker').classList.add('active');
@@ -625,8 +624,8 @@ const game = {
   },
 
   /**
-   * STEP 2: user picked a classmate. Consume the lifeline, close the picker,
-   * show the hint modal with that person's flavored hint.
+   * STEP 2: user picked a classmate. Show "calling..." animation first,
+   * then their hint after a short delay (simulates the call connecting).
    */
   callClassmate(index) {
     if (!this.phonePending) return;
@@ -636,16 +635,29 @@ const game = {
     document.getElementById('ll-phone').classList.add('used');
     this.closeModal('modal-phone-picker');
 
-    const q = QUESTIONS[this.currentLevel];
-    const hintText = this.buildPhoneHint(classmate, q);
-
+    // Stage 2a: ringing screen
     const phoneEl = document.getElementById('phone-text');
     phoneEl.innerHTML =
-      `<div class="phone-caller">📞 ${classmate.name} picks up...</div>` +
-      `<div class="phone-reply">"${hintText}"</div>` +
-      `<div class="phone-tip">💡 Hint, not the answer — you decide.</div>`;
+      `<div class="phone-ringing">` +
+        `<div class="phone-ring-icon">📞</div>` +
+        `<div class="phone-ring-status">Calling ${classmate.name}<span class="phone-dots"><span>.</span><span>.</span><span>.</span></span></div>` +
+      `</div>`;
     document.getElementById('modal-phone').classList.add('active');
-    playSound('select');
+    // Hide the CONTINUE button while ringing
+    const continueBtn = document.querySelector('#modal-phone .btn');
+    if (continueBtn) continueBtn.style.display = 'none';
+    playSound('phoneRing');
+
+    // Stage 2b: after 2.4s, show the hint
+    setTimeout(() => {
+      const q = QUESTIONS[this.currentLevel];
+      const hintText = this.buildPhoneHint(classmate, q);
+      phoneEl.innerHTML =
+        `<div class="phone-caller">📞 ${classmate.name}:</div>` +
+        `<div class="phone-reply">"Hi Eren! Your turn — what do you think the answer is? My hint: ${hintText}"</div>`;
+      if (continueBtn) continueBtn.style.display = '';
+      playSound('select');
+    }, 2400);
   },
 
   useSarah() {

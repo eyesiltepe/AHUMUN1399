@@ -120,6 +120,17 @@ function playSound(type) {
       playPluck(554.4, 0.1, 0.1, 0.06);
       playPluck(660, 0.15, 0.12, 0.12);
       break;
+    case 'phoneRing':
+      // Classic two-tone phone ringing (like an old landline) - two rings
+      // Each "ring" is two short tones in rapid alternation
+      [0, 1.0].forEach(start => {
+        for (let i = 0; i < 4; i++) {
+          const t = start + i * 0.12;
+          playTone(880, 0.08, 'sine', 0.10, t);
+          playTone(1100, 0.08, 'sine', 0.08, t + 0.04);
+        }
+      });
+      break;
     case 'walkaway':
       playPluck(440, 0.3, 0.14, 0);
       playPluck(329.6, 0.3, 0.14, 0.2);

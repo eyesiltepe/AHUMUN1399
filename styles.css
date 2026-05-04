@@ -586,6 +586,7 @@ body::before {
   text-align: center;
   font-size: clamp(0.95rem, 1.85vw, 1.35rem);
   font-weight: 600;
+  white-space: pre-line; /* preserves \n in poem questions */
   box-shadow:
     0 0 40px rgba(250, 204, 21, 0.12),
     inset 0 0 40px rgba(8, 47, 73, 0.5),
@@ -1018,6 +1019,7 @@ body::before {
   margin-bottom: 18px;
   line-height: 1.5;
   padding: 0 4px;
+  text-align: center;
 }
 .phone-candidate {
   display: block;
@@ -1025,10 +1027,10 @@ body::before {
   background: rgba(15, 23, 42, 0.55);
   border: 1px solid rgba(250, 204, 21, 0.35);
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 16px 16px;
   margin-bottom: 10px;
   color: var(--text);
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   font-family: var(--font-ui);
   transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
@@ -1040,18 +1042,13 @@ body::before {
 }
 .phone-candidate-name {
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  letter-spacing: 0.05em;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
   color: var(--gold);
-  margin-bottom: 2px;
-}
-.phone-candidate-quirk {
-  font-size: 0.82rem;
-  color: rgba(226, 232, 240, 0.75);
-  font-style: italic;
 }
 .phone-block {
   margin: 18px 0 8px;
+  min-height: 130px;
 }
 .phone-caller {
   font-family: var(--font-mono-stats);
@@ -1065,20 +1062,52 @@ body::before {
 }
 .phone-reply {
   font-style: italic;
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   line-height: 1.6;
   color: var(--gold-light);
-  margin: 8px 0 18px;
+  margin: 8px 0 8px;
   padding: 0 8px;
 }
-.phone-tip {
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.72);
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(250, 204, 21, 0.18);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+
+/* "Calling..." ring animation */
+.phone-ringing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 0 14px;
+  gap: 14px;
+}
+.phone-ring-icon {
+  font-size: 3rem;
+  animation: phone-shake 0.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.5));
+}
+.phone-ring-status {
+  font-family: var(--font-mono-stats);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+.phone-dots span {
+  display: inline-block;
+  animation: phone-dot-blink 1.4s infinite;
+  opacity: 0.2;
+}
+.phone-dots span:nth-child(2) { animation-delay: 0.2s; }
+.phone-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes phone-shake {
+  0%, 100% { transform: rotate(-12deg); }
+  25% { transform: rotate(12deg); }
+  50% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+@keyframes phone-dot-blink {
+  0%, 60%, 100% { opacity: 0.2; }
+  30% { opacity: 1; }
 }
 
 /* === RESPONSIVE === */
