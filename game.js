@@ -386,237 +386,162 @@ const game = {
   },
 
   /* === CLASSMATES POOL ===
-     Real students from AHUM UN1399 (Spring 2026). The 'style' field is
-     used internally to flavor each classmate's hint phrasing, but is
-     never shown to the player - they just see names. */
+     Real students from AHUM UN1399 (Spring 2026). Each classmate has:
+     - style: voice/personality, used to flavor their answer
+     - accuracy: probability (0-1) they give the CORRECT answer when called.
+       The rest of the time they give an incorrect one but still confidently!
+       Player must learn over time who to trust. The accuracy field is never
+       shown to the player - they have to read the room. */
   classmates: [
-    { name: "Shehar Bano", style: "thoughtful" },
-    { name: "Juliana Bryant", style: "confident" },
-    { name: "Ines Caldara", style: "scholarly" },
-    { name: "Ibrahim Ibrahim", style: "casual" },
-    { name: "Michael Ishak", style: "analytical" },
-    { name: "Shunammite Jiwanmall", style: "warm" },
-    { name: "Nafeesa Mahmood", style: "precise" },
-    { name: "Pranav Manoj", style: "philosophical" },
-    { name: "Lucy Markow", style: "witty" },
-    { name: "Jason McCord", style: "humble" },
-    { name: "Narges Noorbakhsh", style: "poetic" },
-    { name: "Lynsey Overturf", style: "decisive" },
-    { name: "Andrea Riccelli", style: "dramatic" },
-    { name: "Yuval Shemla", style: "calm" },
-    { name: "Luke Suess", style: "energetic" },
-    { name: "Nina Wang", style: "meticulous" }
+    { name: "Shehar Bano",         style: "thoughtful",    accuracy: 0.75 },
+    { name: "Juliana Bryant",      style: "confident",     accuracy: 0.55 },  // confident bluffer
+    { name: "Ines Caldara",        style: "scholarly",     accuracy: 0.85 },  // reliable
+    { name: "Ibrahim Ibrahim",     style: "casual",        accuracy: 0.40 },  // big bluffer
+    { name: "Michael Ishak",       style: "analytical",    accuracy: 0.80 },
+    { name: "Shunammite Jiwanmall",style: "warm",          accuracy: 0.65 },
+    { name: "Nafeesa Mahmood",     style: "precise",       accuracy: 0.85 },  // reliable
+    { name: "Pranav Manoj",        style: "philosophical", accuracy: 0.70 },
+    { name: "Lucy Markow",         style: "witty",         accuracy: 0.50 },  // 50/50 - reads syllabus but distracted
+    { name: "Jason McCord",        style: "humble",        accuracy: 0.75 },  // second-guesser, usually right
+    { name: "Narges Noorbakhsh",   style: "poetic",        accuracy: 0.65 },
+    { name: "Lynsey Overturf",     style: "decisive",      accuracy: 0.60 },  // decisive but not always right
+    { name: "Andrea Riccelli",     style: "dramatic",      accuracy: 0.45 },  // dramatic bluffer
+    { name: "Yuval Shemla",        style: "calm",          accuracy: 0.75 },
+    { name: "Luke Suess",          style: "energetic",     accuracy: 0.50 },  // enthusiasm != accuracy
+    { name: "Nina Wang",           style: "meticulous",    accuracy: 0.90 }   // most reliable - flashcards work
   ],
 
   /* Stash for the multi-step phone lifeline */
   phonePending: null,
 
   /**
-   * Build a HINT (not the direct answer) that steers the player toward the
-   * correct option without naming it. Each hint:
-   *  - eliminates one wrong option (always), OR
-   *  - hints at the position of the correct answer with a clue, OR
-   *  - quotes the correct answer's first words / hints at a theme
-   * The HINT delivery is shaped by the classmate's personality.
+   * Build the classmate's ANSWER. Each classmate has an `accuracy` (probability
+   * of giving the correct answer). When wrong, they pick a plausible-looking
+   * wrong answer (one of the visible non-correct options). They always sound
+   * confident - no hints, no hedging, no "but I'm not sure". The player must
+   * decide who they trust based on this answer alone. This is a real bluff:
+   * even Lucy Markow can be wrong; even Ibrahim might be right by accident.
    */
-  buildPhoneHint(classmate, q) {
+  buildPhoneAnswer(classmate, q) {
     const letters = ['A', 'B', 'C', 'D', 'E'];
     const correctIndex = q.correct;
-    const correctText = q.answers[correctIndex];
-    const correctLetter = letters[correctIndex];
 
-    // Pick a wrong index that hasn't been eliminated by 50:50, to "steer away from"
-    const wrongIndices = q.answers
-      .map((_, i) => i)
-      .filter(i => i !== correctIndex && !this.hiddenAnswers.includes(i));
+    // Roll the dice: do they get it right?
+    const isCorrect = Math.random() < classmate.accuracy;
 
-    // Two hint techniques, chosen randomly
-    const technique = Math.random() < 0.5 ? 'eliminate' : 'narrow';
-
-    // The first 3-5 words of the correct answer (as a teaser)
-    const firstWords = correctText.split(/\s+/).slice(0, 3).join(' ');
-
-    let hint;
-    if (technique === 'eliminate' && wrongIndices.length > 0) {
-      const eliminated = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-      const elimLetter = letters[eliminated];
-      hint = { kind: 'eliminate', letter: elimLetter };
+    let chosenIndex;
+    if (isCorrect) {
+      chosenIndex = correctIndex;
     } else {
-      // Narrow toward correct: teaser + nearby letter range
-      hint = { kind: 'narrow', firstWords, letter: correctLetter };
+      // Pick a wrong option (preferably one not eliminated by 50:50)
+      const wrongOptions = q.answers
+        .map((_, i) => i)
+        .filter(i => i !== correctIndex && !this.hiddenAnswers.includes(i));
+      // Fallback to any wrong if all visible-wrong are gone
+      const pool = wrongOptions.length > 0
+        ? wrongOptions
+        : q.answers.map((_, i) => i).filter(i => i !== correctIndex);
+      chosenIndex = pool[Math.floor(Math.random() * pool.length)];
     }
 
-    return this.phrasePhoneHint(classmate, hint);
+    const chosenLetter = letters[chosenIndex];
+    const chosenText = q.answers[chosenIndex];
+    return this.phrasePhoneAnswer(classmate, chosenLetter, chosenText);
   },
 
-  phrasePhoneHint(classmate, hint) {
-    // Personality-flavored hint phrasings.
-    // Each style has variants for both 'eliminate' and 'narrow' hint kinds.
+  /**
+   * Phrase the answer in the classmate's personal voice. They ALWAYS sound
+   * confident - that's the point of the bluff. Whether they're right or
+   * wrong, you can't tell from how they say it.
+   */
+  phrasePhoneAnswer(classmate, letter, text) {
+    // Truncate very long answer text for display
+    const shortText = text.length > 70 ? text.substring(0, 67) + '...' : text;
+
     const phrasings = {
-      thoughtful: {
-        eliminate: [
-          `Hmm, let me think... I'm pretty sure it's NOT ${hint.letter}. Rule that one out.`,
-          `Give me a second... I remember crossing out ${hint.letter} in my notes. Don't pick it.`
-        ],
-        narrow: [
-          `I'm fairly sure the right answer starts with the words "${hint.firstWords}..." — does that match one of your options?`,
-          `From what I recall, the answer begins with something like "${hint.firstWords}..." — go from there.`
-        ]
-      },
-      confident: {
-        eliminate: [
-          `${hint.letter}? No way. That's wrong. Eliminate it.`,
-          `Whatever you do, don't pick ${hint.letter}. I'm telling you.`
-        ],
-        narrow: [
-          `Look for the option that starts with "${hint.firstWords}..." — that's the one.`,
-          `The right answer begins "${hint.firstWords}..." — find it.`
-        ]
-      },
-      scholarly: {
-        eliminate: [
-          `According to my notes, ${hint.letter} is definitively incorrect. Discard it.`,
-          `${hint.letter} is a common distractor — it's wrong. Move on.`
-        ],
-        narrow: [
-          `The accurate response in the readings opens with "${hint.firstWords}..." — that's your direction.`,
-          `From the glossary, the correct phrasing starts "${hint.firstWords}..." — match it.`
-        ]
-      },
-      casual: {
-        eliminate: [
-          `Bro, ${hint.letter} is a trap. Don't fall for it.`,
-          `Yeah, ${hint.letter}? Skip it. Trust me.`
-        ],
-        narrow: [
-          `Look for something like "${hint.firstWords}..." — that's the vibe of the right answer.`,
-          `The answer kinda starts with "${hint.firstWords}..." — you'll see it.`
-        ]
-      },
-      analytical: {
-        eliminate: [
-          `By process of elimination — ${hint.letter} is logically inconsistent. Cross it out.`,
-          `${hint.letter} contradicts the source material. It's wrong.`
-        ],
-        narrow: [
-          `The correct response begins with "${hint.firstWords}..." — that's where the logic points.`,
-          `Pattern-matching from the readings: the right answer opens "${hint.firstWords}..."`
-        ]
-      },
-      warm: {
-        eliminate: [
-          `Aw sweetie, ${hint.letter} is wrong. Just don't pick that one and you'll be fine!`,
-          `Oh honey, skip ${hint.letter} — it's a trap! You've got this!`
-        ],
-        narrow: [
-          `The right answer starts with something like "${hint.firstWords}..." — I believe in you!`,
-          `Look for "${hint.firstWords}..." — you'll see it, sweetie!`
-        ]
-      },
-      precise: {
-        eliminate: [
-          `${hint.letter} is incorrect. Underlined in my notes. Eliminate.`,
-          `Not ${hint.letter}. I have it in red ink. Skip.`
-        ],
-        narrow: [
-          `Correct answer begins: "${hint.firstWords}..." — verbatim from the text.`,
-          `The exact wording starts with "${hint.firstWords}..." — find that option.`
-        ]
-      },
-      philosophical: {
-        eliminate: [
-          `Truth is rarely found in ${hint.letter}. Look elsewhere.`,
-          `${hint.letter} is a shadow on the wall, not the form itself. Discard it.`
-        ],
-        narrow: [
-          `The essence of the answer begins with "${hint.firstWords}..." — meditate on that.`,
-          `Seek the option that opens with "${hint.firstWords}..." — therein lies the truth.`
-        ]
-      },
-      witty: {
-        eliminate: [
-          `${hint.letter}? Sarah Bin Tyeer would weep. It's wrong.`,
-          `If you pick ${hint.letter}, I'm changing my number. Don't.`
-        ],
-        narrow: [
-          `The right one starts "${hint.firstWords}..." — like, obviously.`,
-          `Look for "${hint.firstWords}..." — it's the only one that doesn't sound made up.`
-        ]
-      },
-      humble: {
-        eliminate: [
-          `I think... I mean, I'm pretty sure... ${hint.letter} is not it. Probably skip it.`,
-          `Don't quote me, but ${hint.letter} feels wrong. I'd avoid it.`
-        ],
-        narrow: [
-          `I might be off, but I think the answer starts with "${hint.firstWords}..." — that ring a bell?`,
-          `Maybe look for something like "${hint.firstWords}..."? I think that's it.`
-        ]
-      },
-      poetic: {
-        eliminate: [
-          `${hint.letter} is the nightingale's excuse — alluring, but a distraction. Pass.`,
-          `Like the duck who would not leave the pond, ${hint.letter} stays put. It is wrong.`
-        ],
-        narrow: [
-          `The hoopoe whispers: the answer begins with "${hint.firstWords}..."`,
-          `As if from the Conference itself: look for "${hint.firstWords}..." — it leads to truth.`
-        ]
-      },
-      decisive: {
-        eliminate: [
-          `Not ${hint.letter}. Done. Move on.`,
-          `${hint.letter}: wrong. Next.`
-        ],
-        narrow: [
-          `Starts with "${hint.firstWords}..." — pick it.`,
-          `"${hint.firstWords}..." — that's your answer. Lock it.`
-        ]
-      },
-      dramatic: {
-        eliminate: [
-          `Ladies and gentlemen of the jury — ${hint.letter} is FALSE! Strike it from the record!`,
-          `Objection! ${hint.letter} is a baseless claim. Strike it.`
-        ],
-        narrow: [
-          `The truth, your honor, begins with the words "${hint.firstWords}..."!`,
-          `I submit to the court that the answer opens "${hint.firstWords}..."`
-        ]
-      },
-      calm: {
-        eliminate: [
-          `Take a breath. ${hint.letter} is not it. You're fine.`,
-          `Easy now. ${hint.letter} is wrong. Just skip it and you'll see the answer.`
-        ],
-        narrow: [
-          `Slow down. The answer starts with "${hint.firstWords}..." — find it calmly.`,
-          `Breathe. Look for "${hint.firstWords}..." — it's right there.`
-        ]
-      },
-      energetic: {
-        eliminate: [
-          `NOT ${hint.letter}!! TRUST ME!! Skip skip skip!`,
-          `${hint.letter} IS A TRAP!! Avoid! GO GO GO!`
-        ],
-        narrow: [
-          `THE ANSWER STARTS WITH "${hint.firstWords}..."!! YES!! GO!!`,
-          `LOOK FOR "${hint.firstWords}..."!! YOU'VE GOT THIS!!`
-        ]
-      },
-      meticulous: {
-        eliminate: [
-          `Checking flashcards... ${hint.letter}: incorrect. Confirmed wrong.`,
-          `Per my week-three notes, ${hint.letter} is not the answer. Eliminate.`
-        ],
-        narrow: [
-          `Per flashcard #47: the correct response begins "${hint.firstWords}..." — verified.`,
-          `My notes show the answer starting with "${hint.firstWords}..." — page reference available on request.`
-        ]
-      }
+      thoughtful: [
+        `Hmm, let me think... yes, it's ${letter}. "${shortText}". I'm sure of it.`,
+        `Give me a second... okay, the answer is ${letter}. Lock it in.`,
+        `I remember this from the reading. It's ${letter}. Definitely.`
+      ],
+      confident: [
+        `That's ${letter}. Easy. Lock it in.`,
+        `${letter}. 100%. Move on.`,
+        `Trust me, it's ${letter}. No question.`
+      ],
+      scholarly: [
+        `According to the readings, the answer is ${letter}.`,
+        `Based on my notes, it's ${letter}. I have it underlined.`,
+        `From the glossary, definitely ${letter}.`
+      ],
+      casual: [
+        `Oh that one? Yeah it's ${letter}, no worries.`,
+        `Bro, it's ${letter}. You got this.`,
+        `Easy, it's ${letter}. Trust me.`
+      ],
+      analytical: [
+        `By process of elimination, the answer is ${letter}.`,
+        `Logically the answer is ${letter}. The other options don't hold up.`,
+        `Cross-referencing the source — it's ${letter}.`
+      ],
+      warm: [
+        `Oh sweetie, the answer is ${letter}! You've got this!`,
+        `Don't worry honey, it's ${letter}. I believe in you!`,
+        `${letter}, dear. I'm certain.`
+      ],
+      precise: [
+        `The answer is ${letter}. I have it underlined in my notes.`,
+        `Exactly ${letter}. Page reference and everything.`,
+        `${letter}. Verbatim from the text.`
+      ],
+      philosophical: [
+        `Ah, this question reaches the essence of the matter. The answer is ${letter}.`,
+        `In the spirit of the text itself, ${letter} is the truth.`,
+        `${letter}. The deeper meaning points there.`
+      ],
+      witty: [
+        `Oh, did Sarah Bin Tyeer write this one? It's ${letter}. Obviously.`,
+        `${letter}. I'd bet my participation grade on it.`,
+        `${letter}. Did you even do the reading? Just kidding. Mostly.`
+      ],
+      humble: [
+        `I think... I mean I'm pretty sure... it's ${letter}. Yeah, go with that.`,
+        `Don't quote me but I'm fairly confident it's ${letter}.`,
+        `${letter}. Probably. I mean, definitely. Go with ${letter}.`
+      ],
+      poetic: [
+        `As the Persian masters would say — the answer is ${letter}.`,
+        `${letter}. Like a hoopoe, the answer flies straight to me.`,
+        `The wind whispers ${letter}. Trust it.`
+      ],
+      decisive: [
+        `${letter}. Done. Next question.`,
+        `It's ${letter}. Don't overthink it.`,
+        `${letter}. Lock it in. Move on.`
+      ],
+      dramatic: [
+        `Ladies and gentlemen of the jury — the answer is ${letter}!`,
+        `Without a shadow of a doubt: ${letter}. I rest my case.`,
+        `${letter}! Mark my words!`
+      ],
+      calm: [
+        `Yes, the answer is ${letter}. Take a breath. You're fine.`,
+        `${letter}. Stay calm, lock it in.`,
+        `Easy, it's ${letter}. No need to second-guess.`
+      ],
+      energetic: [
+        `OH I KNOW THIS ONE!! It's ${letter}!! GO!!`,
+        `Yes! ${letter}! I just covered this in my study group!`,
+        `${letter}!! I'M SURE!! GO GO GO!`
+      ],
+      meticulous: [
+        `Hold on, checking my flashcards... yes, ${letter}. Confirmed.`,
+        `Per my notes from week three, the answer is ${letter}.`,
+        `${letter}. Per flashcard #47. Verified.`
+      ]
     };
 
-    const styleSet = phrasings[classmate.style] || phrasings.confident;
-    const pool = styleSet[hint.kind];
+    const pool = phrasings[classmate.style] || phrasings.confident;
     return pool[Math.floor(Math.random() * pool.length)];
   },
 
@@ -673,13 +598,13 @@ const game = {
     if (continueBtn) continueBtn.style.display = 'none';
     playSound('phoneRing');
 
-    // Stage 2b: after 2.4s, show the hint
+    // Stage 2b: after 2.4s, show the classmate's answer
     setTimeout(() => {
       const q = QUESTIONS[this.currentLevel];
-      const hintText = this.buildPhoneHint(classmate, q);
+      const answerText = this.buildPhoneAnswer(classmate, q);
       phoneEl.innerHTML =
         `<div class="phone-caller">📞 ${classmate.name}:</div>` +
-        `<div class="phone-reply">"Hi Eren! Your turn — what do you think the answer is? My hint: ${hintText}"</div>`;
+        `<div class="phone-reply">"Hi Eren! ${answerText}"</div>`;
       if (continueBtn) continueBtn.style.display = '';
       playSound('select');
     }, 2400);

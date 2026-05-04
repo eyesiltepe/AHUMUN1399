@@ -337,6 +337,47 @@ const QUESTION_POOL = {
     { question: "Rumi (in Lewis's translation):\n\n  'Whoever leaves our circle for another place / might as well relinquish sense of sight and sound.\n  A lover licks his liver's blood, lion-like; / what lion-heart would shrink from love and guts?'\n\nThe phrase 'lion-like' applied to the lover suggests:", answers: ["The lover is physically violent toward enemies.", "The true lover endures the painful, costly demands of love with courage - love is heroic, not sentimental.", "Lovers are predators preying on the weak.", "The lover refuses all food except meat.", "Persian poets always used cat imagery for love."], correct: 1 },
     { question: "Ibn 'Arabi opens 'Hadith of Love':\n\n  'Wonder, / a garden among the flames!'\n\nThis brief image (a garden inside fire) is one of Ibn 'Arabi's signature paradoxes. What does it figure?", answers: ["A literal botanical garden that survived a fire in Mecca.", "The mystical truth that opposites coincide in the divine - what destroys also nourishes; love consumes the lover yet gives him life.", "A scientific observation about desert plants.", "A scene from a battle Ibn 'Arabi witnessed.", "An image of Hell with green vegetation."], correct: 1 },
     { question: "'Attar describes the Valley of Bewilderment (the sixth valley) in The Conference of the Birds:\n\n  'When the traveler reaches this place / he is lost - and yet he is found...\n  The known dissolves; nothing remains / but a state with no name.'\n\nThis describes which Sufi concept from the glossary?", answers: ["Adab - moral refinement through education.", "Fana' - the annihilation of the ego in the experience of the Divine.", "'Asabiyyah - tribal solidarity and group cohesion.", "Murua'a - the virtue-ethics of personal honor.", "Tatfil - the practice of party crashing."], correct: 1 },
+  ],
+
+  /* === HIKAYA / PARABLE STORIES (always question 3 or 4) ===
+     Embedded tales (hikayas) drawn primarily from 'Attar's Conference of
+     the Birds and the 1001 Nights. The Sheikh San'an story (the longest
+     and most famous parable in the Conference) is heavily featured -
+     it occupies the first 7 entries of this tier. */
+  hikaya: [
+    // === SHEIKH SAN'AN — the centerpiece parable ===
+    { question: "In 'Attar's Conference of the Birds, the longest and most famous embedded story is about Sheikh San'an. Before his fall, what was his standing in the Muslim community?", answers: ["He was a wealthy merchant in Baghdad with no religious training.", "For fifty years he kept Mecca's holy place; four hundred pupils followed him; he had performed the Hajj fifty times.", "He was a young dervish who had only recently converted.", "He was the caliph's chief astrologer, not a religious figure.", "He had renounced Islam years before and lived as a Christian monk."], correct: 1 },
+    { question: "What recurring dream troubled Sheikh San'an, foreshadowing his story?", answers: ["He dreamed of his own death by drowning.", "He dreamed he had left Mecca, lived in Rome, and bowed down to an idol in a Christian temple.", "He dreamed of leading an army against the infidel.", "He dreamed the Ka'aba had crumbled to dust.", "He dreamed he was Joseph, abandoned in a well."], correct: 1 },
+    { question: "Upon arriving in Rome, Sheikh San'an saw a Christian girl and immediately fell in love. To accept her, what humiliating conditions did she finally impose on him?", answers: ["She demanded a fortune in gold and a palace overlooking the sea.", "She required him to drink wine, burn the Qur'an, worship idols, and tend her swine for a year.", "She asked only that he learn to read Latin.", "She insisted he write a treatise refuting Islam.", "She required nothing - the sheikh joined her faith of his own accord."], correct: 1 },
+    { question: "When Sheikh San'an's four hundred disciples saw him fallen - now a swineherd in Christian dress - they returned to Mecca in despair. A wise companion who had stayed behind rebuked them. What did he say?", answers: ["That they had done well to abandon a lost cause.", "That they were 'fair-weather friends' - a true friend follows his friend even into hell and blasphemy, and never leaves him in his shame.", "That the sheikh was beyond help and they should forget him.", "That they should report him to the caliph for execution.", "That they had been right to flee, since proximity to sin is itself a sin."], correct: 1 },
+    { question: "What ultimately delivered Sheikh San'an from his fall in 'Attar's tale?", answers: ["The girl repented and converted, freeing him.", "His loyal friend returned to Rome with the disciples and prayed for him through the night until a vision restored his faith - and then the Christian girl herself dreamed of light, embraced Islam, and died returning to him.", "The Pope of Rome intervened and ordered the girl to release him.", "The sheikh died of shame and was buried in Rome.", "He realized the girl was a jinni in disguise and broke the spell."], correct: 1 },
+    { question: "What is the deeper Sufi lesson 'Attar draws from the Sheikh San'an parable?", answers: ["That Christianity is a temptation Muslims must always resist.", "That no one - however learned, however devout - is safe from the Self's hidden swine; the path of Love passes through humiliation, and only there does the seeker find what was always within.", "That love between Muslims and Christians is forbidden.", "That sheikhs should never travel beyond Mecca.", "That dreams should always be ignored as the work of Satan."], correct: 1 },
+    { question: "When Sheikh San'an's disciples first try to talk him out of his love for the Christian girl, his reaction is described in a way that reveals a key Sufi principle. What is it?", answers: ["He tells them love can be cured by reason and prayer.", "He tells them that love has no cure, that advice has no effect when no one hears, and 'when did a lover listen to advice?'", "He tells them love is a sin and apologizes for his weakness.", "He tells them his love is a test from God that they should not interrupt.", "He tells them to find him a different woman to marry."], correct: 1 },
+
+    // === OTHER CONFERENCE OF THE BIRDS PARABLES ===
+    { question: "In 'Attar's parable of King Mas'oud and the fisherboy, the king secretly sits beside a sad child fishing on the shore. After they fish together and catch a hundred fish, the king departs - and the next day summons the boy to his throne, declaring him an equal. What does this parable teach about the divine-human relationship?", answers: ["That kings should disguise themselves to test their subjects.", "That God descends to the seeker's level in disguise; the soul that befriends Him without recognizing Him is later raised to share His throne.", "That fishing is a holy occupation in Sufism.", "That all sad children deserve royal favor.", "That kings need to escape their court duties occasionally."], correct: 1 },
+    { question: "In Conference of the Birds, the hoopoe tells the parable of King Mahmoud and the woodcutter. The king dismounts to help an old man carry his load. What is the spiritual point?", answers: ["That kings are obligated to perform manual labor.", "That the king (a figure for God) stoops to share the seeker's burden, making the seeker forever rich in the memory of that meeting.", "That woodcutting is a pious profession.", "That old men deserve special respect from rulers.", "That the king was secretly testing the woodcutter's honesty."], correct: 1 },
+    { question: "Each bird in Conference of the Birds offers an excuse for not joining the journey. The nightingale cannot leave his rose; the duck cannot leave the water; the peacock cannot forget paradise. What do these excuses represent in 'Attar's allegory?", answers: ["The literal preferences of different bird species.", "The various attachments of the Self - beauty, comfort, memory of innocence - that keep the soul from undertaking the spiritual journey.", "Reasons why most people cannot become Sufis.", "An ornithological catalogue of bird behavior.", "Mistakes earlier prophets made before reaching enlightenment."], correct: 1 },
+    { question: "After the birds cross the seven valleys, only thirty (si murgh) survive to reach the Simorgh. They look and see... themselves. What is the philosophical resolution of this image?", answers: ["The journey was a deception; there was never a Simorgh.", "The seeker and the Sought are not two; the Divine that the soul searches for is its own innermost truth - found only after the Self is annihilated through the journey.", "Birds cannot understand metaphysics, so the lesson is unclear.", "The thirty birds were chosen because of their numerical superiority.", "The Simorgh was a king who had died, and the birds inherited his throne."], correct: 1 },
+    { question: "The seven valleys in Conference of the Birds are crossed in this order:", answers: ["Love, Quest, Knowledge, Detachment, Bewilderment, Unity, Poverty.", "Quest, Love, Insight (Knowledge), Detachment, Unity, Bewilderment, Poverty and Nothingness.", "Poverty, Bewilderment, Unity, Knowledge, Love, Detachment, Quest.", "Quest, Knowledge, Love, Unity, Detachment, Poverty, Bewilderment.", "Faith, Hope, Love, Charity, Patience, Wisdom, Truth."], correct: 1 },
+
+    // === 1001 NIGHTS — frame and tales ===
+    { question: "In the frame tale of the 1001 Nights, why exactly does Shahrazad volunteer to marry the king who has been killing his brides each morning?", answers: ["She wishes to become queen and inherit his throne.", "She tells her father she wants to liberate the daughters of her people, or die trying.", "Her father commands her to marry him.", "She has fallen in love with the king from afar.", "She believes the king is innocent of the killings."], correct: 1 },
+    { question: "The vizier (Shahrazad's father) tries to dissuade her by telling the parable of the donkey and the ox. In that parable, what happens?", answers: ["The donkey teaches the ox to be a beast of burden.", "The donkey gives the ox advice to refuse food and pretend illness to avoid work; the ox follows it; the farmer then puts the donkey in the ox's place to do the work himself.", "The donkey and the ox become friends and escape to a meadow.", "The donkey betrays the ox to the farmer and is rewarded.", "The donkey teaches the ox to speak human language."], correct: 1 },
+    { question: "In the Tale of the Merchant and the Jinni, the merchant accidentally kills the jinni's invisible son. Three old men then arrive and offer to buy back the merchant's life from the jinni. How do they do it?", answers: ["They pay the jinni in gold and jewels.", "Each old man tells the jinni a marvelous tale; in exchange for each tale, the jinni grants a third of the merchant's blood debt.", "They threaten the jinni with a powerful talisman.", "They appeal to the jinni's mercy through prayer.", "They distract the jinni while the merchant escapes."], correct: 1 },
+    { question: "In the Tale of Tawaddud (1001 Nights), the slave-girl Tawaddud appears before the Caliph Harun al-Rashid. What does she demonstrate that wins her freedom?", answers: ["She sings more beautifully than any musician at court.", "She defeats the caliph's leading scholars in debate across many branches of knowledge - theology, medicine, law, astronomy - and also demonstrates mastery of chess, backgammon, and the lute.", "She weaves a carpet finer than any in the empire.", "She solves a riddle no man at court could answer.", "She tells a story so compelling the caliph weeps."], correct: 1 },
+
+    // === IKHWAN AL-SAFA — Case of the Animals ===
+    { question: "In the Ikhwan al-Safa's 'The Case of the Animals versus Man,' an unusual courtroom is convened. Who hears the case, and what is being tried?", answers: ["The Caliph hears a property dispute between two tribes.", "The King of the Jinn hears the animals' case against humanity for centuries of slavery, slaughter, and abuse.", "Allah Himself sits as judge over a question of theology.", "The Prophet Solomon judges a quarrel between the lion and the elephant.", "A council of philosophers debates the soul of the animal."], correct: 1 },
+    { question: "In the Ikhwan al-Safa's animal trial, the camel testifies about being driven through dark defiles and arid plains; the elephant testifies about chains, cables, and iron goads. The horse testifies about being driven into battle. What is the cumulative point of these testimonies?", answers: ["That humans need better animal-husbandry training.", "That the animals refute human claims of mercy and superiority by presenting concrete evidence of cruelty - human dominion is not earned, only imposed.", "That different animals suffer differently and should be ranked by hardship.", "That the King of the Jinn should free all animals immediately.", "That animals are physically stronger than humans and should rule them."], correct: 1 },
+
+    // === THE JOSEPH STORY (Sura 12) AS HIKAYA ===
+    { question: "In the Qur'an's Joseph story (Sura 12), Joseph's brothers throw him into a well, then dip his shirt in fake blood and bring it to Jacob as 'evidence.' Jacob's response sets up a recurring motif. What does he say?", answers: ["He curses his sons and disowns them.", "He says 'Your souls have tempted you to some act. O seemly / sweet patience!' - a phrase he repeats later when Benjamin too is lost.", "He immediately leads a search party for Joseph.", "He prays for the wolf to be punished.", "He accepts the news silently and never mentions Joseph again."], correct: 1 },
+    { question: "In the Qur'an's Joseph story, the governor's wife who tried to seduce Joseph later invites the women of the city to a banquet. What dramatic scene unfolds?", answers: ["She has Joseph executed in front of them.", "She gives each woman a knife and a piece of fruit, then summons Joseph; struck by his beauty, the women cut their own hands without noticing.", "She accuses Joseph of theft before the assembled women.", "She forces Joseph to serve them as a slave.", "She marries Joseph in a public ceremony."], correct: 1 },
+
+    // === IBN TUFAYL — HAYY IBN YAQZAN ===
+    { question: "In Ibn Tufayl's Hayy ibn Yaqzan, the protagonist grows up alone on a deserted island. By unaided reason and observation, what does he eventually discover?", answers: ["A library of philosophical texts buried in a cave.", "The existence of God, the structure of the cosmos, and the truths of metaphysics - all without scripture, prophet, or community.", "A neighboring island full of inhabitants.", "The art of writing in Arabic.", "The proof that human reason cannot grasp divine truth."], correct: 1 },
+    { question: "In Ibn Tufayl's tale, when Hayy finally encounters organized religion (through the visitor Absal), what conclusion does he reach?", answers: ["That all religions are equally false.", "That ordinary people need symbols, laws, and stories because they cannot grasp divine truth directly through reason - philosophical insight is for the few.", "That Islam is superior to all other religions.", "That he should renounce philosophy and follow tradition.", "That Absal should remain on the island as his student."], correct: 1 },
   ]
 };
 
@@ -354,14 +395,39 @@ const CURRENCY = '$';
 let QUESTIONS = [];
 
 function buildQuestionSet() {
-  // Q1 is ALWAYS a glossary question; Q2 is ALWAYS a poem question.
-  // Then 13 more from the easy/medium/hard tiers (4/5/4 split).
+  // Always:
+  //   Q1 = glossary (advanced terminology question)
+  //   Q2 = poem (with text-to-speech reading)
+  //   Q3 or Q4 = hikaya (a story/parable - Sheikh San'an weighted heaviest)
+  // Then fill the remaining 12 slots from easy / medium / hard tiers.
+
   const glossary = pickN(QUESTION_POOL.glossary, 1);
   const poem = pickN(QUESTION_POOL.poem, 1);
-  const easy = pickN(QUESTION_POOL.easy, 4);
+  const hikaya = pickHikayaWeighted();
+  const easy = pickN(QUESTION_POOL.easy, 3);
   const medium = pickN(QUESTION_POOL.medium, 5);
   const hard = pickN(QUESTION_POOL.hard, 4);
-  QUESTIONS = [...glossary, ...poem, ...easy, ...medium, ...hard];
+
+  // Place hikaya randomly at position 2 (Q3) or 3 (Q4) of the array.
+  const tail = [...easy, ...medium, ...hard];   // 12 questions
+  const hikayaSlotInTail = Math.random() < 0.5 ? 0 : 1;  // becomes Q3 or Q4
+  tail.splice(hikayaSlotInTail, 0, hikaya);     // tail is now 13 long
+  QUESTIONS = [...glossary, ...poem, ...tail];
+}
+
+/**
+ * Pick a hikaya question, with the Sheikh San'an stories weighted ~3x more
+ * likely than any individual non-San'an story. The first 7 entries in the
+ * hikaya tier are San'an stories; the rest are other parables.
+ */
+function pickHikayaWeighted() {
+  const SAN_AN_COUNT = 7;
+  const all = QUESTION_POOL.hikaya;
+  const san_an = all.slice(0, SAN_AN_COUNT);
+  const others = all.slice(SAN_AN_COUNT);
+  // 60% chance to draw a San'an story, 40% chance any other
+  const pool = Math.random() < 0.6 ? san_an : others;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function pickN(arr, n) {
